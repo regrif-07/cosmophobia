@@ -24,6 +24,24 @@ class CanvasMonad {
     }
 }
 
+class InputMonad {
+    constructor(events) {
+        this.events = events;
+    }
+
+    map(func) {
+        return new InputMonad(func(this.events));
+    }
+
+    chain(func) {
+        return func(this.events);
+    }
+
+    getOrElse(defaultValue) {
+        return this.events.length ? this.events : defaultValue;
+    }
+}
+
 function Position(x, y) {
     return {
         position: {
@@ -101,8 +119,46 @@ function renderSystem(entities, canvasMonad) {
     return entities;
 }
 
+function inputSystem(entities, inputMonad) {
+    return inputMonad.chain(events => {
+        return entities.map(entity => {
+            if (entity.id !== "player") {
+                return entity;
+            }
+
+            let velocity = { x: 0, y: 0 };
+            events.forEach(event => {
+                if (event.type === "keydown") {
+                    if (event.key === "ArrowLeft") velocity.x = -2;
+                    if (event.key === "ArrowRight") velocity.x = 2;
+                    if (event.key === "ArrowUp") velocity.y = -2;
+                    if (event.key === "ArrowDown") velocity.y = 2;
+                }
+                if (event.type === "keyup") {
+                    velocity.x = 0;
+                    velocity.y = 0;
+                }
+            });
+
+            return { ...entity, velocity };
+        });
+    });
+}
+
 function physicsSystem(entities) {
-    return entities;
+    return entities.map(entity => {
+        if (entity.position && entity.velocity) {
+            return {
+                ...entity,
+                position: {
+                    x: entity.position.x + entity.velocity.x,
+                    y: entity.position.y + entity.velocity.y,
+                }
+            };
+        }
+
+        return entity;
+    });
 }
 
 function gameLoop(initialEntities, applySystems) {
@@ -111,6 +167,7 @@ function gameLoop(initialEntities, applySystems) {
 }
 
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
+let inputMonad = new InputMonad([]);
 
 const entities = [
     createPlayerEntity(canvasMonad),
@@ -118,8 +175,16 @@ const entities = [
 
 const applySystems = composeSystems(
     physicsSystem,
+    (entities) => inputSystem(entities, inputMonad),
     (entities) => renderSystem(entities, canvasMonad),
 );
+
+window.addEventListener("keydown", event => {
+    inputMonad = inputMonad.map(events => [...events, { type: "keydown", key: event.key}]);
+})
+window.addEventListener("keyup", event => {
+    inputMonad = inputMonad.map(events => [...events, { type: "keyup", key: event.key }]);
+})
 
 gameLoop(entities, applySystems);
 
