@@ -18,39 +18,55 @@ class CanvasMonad {
     getOrElse(defaultValue) {
         return (this.canvas !== null) ? this.canvas : defaultValue;
     }
+
+    getContext(type) {
+        return (this.canvas !== null) ? this.canvas.getContext(type) : null;
+    }
 }
 
-const entities = [
-    {
+function Position(x, y) {
+    return {
         position: {
-            x: 200,
-            y: 200,
+            x: x,
+            y: y,
         },
-        size: {
-            width: 25,
-            height: 25,
-        },
-    },
-    {
-        position: {
-            x: 500,
-            y: 300,
-        },
-        size: {
-            width: 30,
-            height: 15,
-        },
-    }
-]
+    };
+}
 
-const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
+function Velocity(x, y) {
+    return {
+        velocity: {
+            x: x,
+            y: y,
+        },
+    };
+}
 
-const applySystems = composeSystems(
-    physicsSystem,
-    (entities) => renderSystem(entities, canvasMonad),
-);
+function SimplyRendered(width, height, color) {
+    return {
+        simplyRendered: {
+            width: width,
+            height: height,
+            color: color,
+        },
+    };
+}
 
-gameLoop(entities, applySystems);
+function createEntity(id, ...components) {
+    return Object.assign(
+        { id },
+        ...components
+    );
+}
+
+function createPlayerEntity(canvasMonad) {
+    const playerPositionY = canvasMonad.getOrElse(null).height - 30;
+    return createEntity("player",
+        Position(0, playerPositionY),
+        Velocity(0, 0),
+        SimplyRendered(30, 30, "red")
+    );
+}
 
 function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
@@ -61,33 +77,49 @@ function renderSystem(entities, canvasMonad) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        entities.map(entity => {
-            if (!entity.position || !entity.size)
+        entities.forEach(entity => {
+            if (!entity.position)
             {
                 return entity;
             }
 
-            ctx.fillRect(entity.position.x, entity.position.y, entity.size.width, entity.size.height);
+            if (entity.simplyRendered)
+            {
+                ctx.fillStyle = entity.simplyRendered.color;
+                ctx.fillRect(
+                    entity.position.x,
+                    entity.position.y,
+                    entity.simplyRendered.width,
+                    entity.simplyRendered.height
+                );
+            }
+        });
 
-            return entity;
-        })
+        return new CanvasMonad(canvas);
     })
 
     return entities;
 }
 
 function physicsSystem(entities) {
-    return entities.map(entity => {
-        if (!entity.position)
-        {
-            return entity;
-        }
-
-        return {...entity, position: { x: entity.position.x + 1, y: entity.position.y + 1}};
-    });
+    return entities;
 }
 
 function gameLoop(initialEntities, applySystems) {
     const updatedEntities = applySystems(initialEntities);
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems));
 }
+
+const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
+
+const entities = [
+    createPlayerEntity(canvasMonad),
+]
+
+const applySystems = composeSystems(
+    physicsSystem,
+    (entities) => renderSystem(entities, canvasMonad),
+);
+
+gameLoop(entities, applySystems);
+
