@@ -25,19 +25,19 @@ export class CanvasMonad {
 }
 
 export class InputMonad {
-    constructor(events) {
-        this.events = events;
+    constructor(activeKeys = new Set()) {
+        this.activeKeys = activeKeys;
     }
 
     map(func) {
-        return new InputMonad(func(this.events));
+        return new InputMonad(func(this.activeKeys));
     }
 
     chain(func) {
-        return func(this.events);
+        return func(this.activeKeys);
     }
 
     getOrElse(defaultValue) {
-        return this.events.length ? this.events : defaultValue;
+        return this.activeKeys.size ? this.activeKeys : defaultValue;
     }
 }

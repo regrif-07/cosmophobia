@@ -35,8 +35,8 @@ export function renderSystem(entities, canvasMonad) {
 }
 
 export function inputSystem(entities, inputMonad) {
-    return inputMonad.chain(events => {
-        if (events.length === 0) {
+    return inputMonad.chain(activeKeys => {
+        if (activeKeys.length === 0) {
             return entities;
         }
 
@@ -46,19 +46,6 @@ export function inputSystem(entities, inputMonad) {
             "ArrowUp":    { x: 0, y: -4 },
             "ArrowDown":  { x: 0, y: 4 }
         };
-
-        const activeKeys = events.reduce((keysSet, event) => {
-            const key = event.key;
-            if (key in keyToVelocity) {
-                if (event.type === "keydown") {
-                    keysSet.add(key);
-                } else if (event.type === "keyup") {
-                    keysSet.delete(key);
-                }
-            }
-
-            return keysSet;
-        }, new Set());
 
         const velocity = Array.from(activeKeys).reduce((velocity, key) => {
             return {
