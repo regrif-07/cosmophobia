@@ -8,9 +8,11 @@ export function createEntity(id, ...components) {
 }
 
 export function createPlayerEntity(canvasMonad) {
-    const playerPositionY = canvasMonad.getOrElse(null).height - 30;
+    const canvas = canvasMonad.getOrElse(null);
+    const playerPositionY = canvas ? canvas.height / 2 : 0;
+
     return createEntity("player",
-        Position(0, playerPositionY),
+        Position(50, playerPositionY),
         Velocity(0, 0),
         SimplyRendered(30, 30, "red")
     );
