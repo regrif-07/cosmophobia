@@ -36,8 +36,11 @@ export function renderSystem(entities, canvasMonad) {
 
 export function inputSystem(entities, inputMonad) {
     return inputMonad.chain(activeKeys => {
-        if (activeKeys.length === 0) {
-            return entities;
+        if (activeKeys.size === 0) {
+            return entities.map(entity =>
+                entity.id === "player"
+                    ? { ...entity, velocity: { x: 0, y: 0} }
+                    : entity);
         }
 
         const keyToVelocity = {
@@ -48,6 +51,10 @@ export function inputSystem(entities, inputMonad) {
         };
 
         const velocity = Array.from(activeKeys).reduce((velocity, key) => {
+            if (keyToVelocity[key] === undefined) {
+                return { x: 0, y: 0 };
+            }
+
             return {
                 x: velocity.x + keyToVelocity[key].x,
                 y: velocity.y + keyToVelocity[key].y,
