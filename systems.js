@@ -35,27 +35,41 @@ export function renderSystem(entities, canvasMonad) {
 
 export function inputSystem(entities, inputMonad) {
     return inputMonad.chain(events => {
-        return entities.map(entity => {
-            if (entity.id !== "player") {
-                return entity;
+        if (events.length === 0) {
+            return entities;
+        }
+
+        const keyToVelocity = {
+            "ArrowLeft":  { x: -4, y: 0 },
+            "ArrowRight": { x: 4, y: 0 },
+            "ArrowUp":    { x: 0, y: -4 },
+            "ArrowDown":  { x: 0, y: 4 }
+        };
+
+        const activeKeys = events.reduce((keysSet, event) => {
+            const key = event.key;
+            if (key in keyToVelocity) {
+                if (event.type === "keydown") {
+                    keysSet.add(key);
+                } else if (event.type === "keyup") {
+                    keysSet.delete(key);
+                }
             }
 
-            let velocity = { x: 0, y: 0 };
-            events.forEach(event => {
-                if (event.type === "keydown") {
-                    if (event.key === "ArrowLeft") velocity.x = -2;
-                    if (event.key === "ArrowRight") velocity.x = 2;
-                    if (event.key === "ArrowUp") velocity.y = -2;
-                    if (event.key === "ArrowDown") velocity.y = 2;
-                }
-                if (event.type === "keyup") {
-                    velocity.x = 0;
-                    velocity.y = 0;
-                }
-            });
+            return keysSet;
+        }, new Set());
 
-            return { ...entity, velocity };
-        });
+        const velocity = Array.from(activeKeys).reduce((velocity, key) => {
+            return {
+                x: velocity.x + keyToVelocity[key].x,
+                y: velocity.y + keyToVelocity[key].y,
+            };
+        }, {x: 0, y: 0});
+
+        return entities.map(entity =>
+            entity.id === "player"
+                ? { ...entity, velocity: velocity }
+                : entity);
     });
 }
 
