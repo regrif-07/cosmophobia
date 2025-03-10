@@ -1,3 +1,7 @@
+export function hasComponents(entity, ...componentNames) {
+    return componentNames.every(name => entity[name] !== undefined);
+}
+
 export function Position(x, y) {
     return {
         position: {

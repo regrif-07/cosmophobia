@@ -1,4 +1,5 @@
 import {CanvasMonad} from "./monads.js";
+import {hasComponents} from "./components.js";
 
 export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
@@ -9,7 +10,7 @@ export function renderSystem(entities, canvasMonad) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        entities.forEach(entity => {
+        entities.filter(entity => hasComponents(entity, "position")).forEach(entity => {
             if (!entity.position)
             {
                 return entity;
@@ -75,7 +76,7 @@ export function inputSystem(entities, inputMonad) {
 
 export function physicsSystem(entities) {
     return entities.map(entity => {
-        if (entity.position && entity.velocity) {
+        if (hasComponents(entity, "position", "velocity")) {
             return {
                 ...entity,
                 position: {
