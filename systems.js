@@ -1,5 +1,5 @@
 import {CanvasMonad} from "./monads.js";
-import {hasComponents, ShooterStatus} from "./components.js";
+import {hasComponents} from "./components.js";
 import {createBulletEntity} from "./entities.js";
 
 export function composeSystems(...systems) {
@@ -103,4 +103,24 @@ export function shotRequestProcessingSystem(entities) {
     })
 
     return updatedEntities.concat(bulletsToAdd);
+}
+
+export function bulletCleaningSystem(entities, canvasMonad) {
+    return entities.filter(entity => {
+        if (entity.type !== "bullet") {
+            return true;
+        }
+
+        let canvas = canvasMonad.getOrElse(null);
+        return entity.position.x >= 0 && entity.position.x <= canvas.width &&
+               entity.position.y >= 0 && entity.position.y <= canvas.height;
+    })
+}
+
+export function logSystem(entities) {
+    entities.forEach(entity => {
+        console.log(entity);
+    })
+
+    return entities;
 }
