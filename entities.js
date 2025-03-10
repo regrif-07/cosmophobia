@@ -1,8 +1,10 @@
 import {Position, SimplyRendered, Velocity} from "./components.js";
 
-export function createEntity(id, ...components) {
+let entityIdCounter = 0;
+export function createEntity(type, ...components) {
+    let id = entityIdCounter++;
     return Object.assign(
-        { id },
+        { id, type },
         ...components
     );
 }

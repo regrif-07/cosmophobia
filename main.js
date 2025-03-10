@@ -12,6 +12,11 @@ let inputMonad = new InputMonad();
 
 const entities = [
     createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad),
 ]
 
 const applySystems = composeSystems(

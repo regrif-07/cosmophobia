@@ -38,7 +38,7 @@ export function inputSystem(entities, inputMonad) {
     return inputMonad.chain(activeKeys => {
         if (activeKeys.size === 0) {
             return entities.map(entity =>
-                entity.id === "player"
+                entity.type === "player"
                     ? { ...entity, velocity: { x: 0, y: 0} }
                     : entity);
         }
@@ -62,7 +62,7 @@ export function inputSystem(entities, inputMonad) {
         }, {x: 0, y: 0});
 
         return entities.map(entity =>
-            entity.id === "player"
+            entity.type === "player"
                 ? { ...entity, velocity: velocity }
                 : entity);
     });
