@@ -1,6 +1,6 @@
 import { CanvasMonad, InputMonad } from "./monads.js";
 import { createPlayerEntity } from "./entities.js";
-import { composeSystems, inputSystem, physicsSystem, renderSystem } from "./systems.js";
+import {composeSystems, inputSystem, physicsSystem, renderSystem, shotRequestProcessingSystem} from "./systems.js";
 
 function gameLoop(initialEntities, applySystems) {
     const updatedEntities = applySystems(initialEntities);
@@ -12,14 +12,10 @@ let inputMonad = new InputMonad();
 
 const entities = [
     createPlayerEntity(canvasMonad),
-    createPlayerEntity(canvasMonad),
-    createPlayerEntity(canvasMonad),
-    createPlayerEntity(canvasMonad),
-    createPlayerEntity(canvasMonad),
-    createPlayerEntity(canvasMonad),
 ]
 
 const applySystems = composeSystems(
+    shotRequestProcessingSystem,
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad),
     (entities) => renderSystem(entities, canvasMonad),

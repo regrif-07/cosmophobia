@@ -29,3 +29,11 @@ export function SimplyRendered(width, height, color) {
         },
     };
 }
+
+export function ShooterStatus() {
+    return {
+        shooterStatus: {
+            shotRequested: false,
+        }
+    }
+}

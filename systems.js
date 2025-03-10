@@ -1,5 +1,6 @@
 import {CanvasMonad} from "./monads.js";
-import {hasComponents} from "./components.js";
+import {hasComponents, ShooterStatus} from "./components.js";
+import {createBulletEntity} from "./entities.js";
 
 export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
@@ -61,9 +62,14 @@ export function inputSystem(entities, inputMonad) {
             };
         }, {x: 0, y: 0});
 
+        const shooterStatus = { shotRequested: false };
+        if (activeKeys.has(" ")) {
+            shooterStatus.shotRequested = true;
+        }
+
         return entities.map(entity =>
             entity.type === "player"
-                ? { ...entity, velocity: velocity }
+                ? { ...entity, velocity: velocity, shooterStatus }
                 : entity);
     });
 }
@@ -82,4 +88,19 @@ export function physicsSystem(entities) {
 
         return entity;
     });
+}
+
+export function shotRequestProcessingSystem(entities) {
+    const bulletsToAdd = [];
+
+    const updatedEntities = entities.map(entity => {
+        if (!hasComponents(entity, "shooterStatus") || !entity.shooterStatus.shotRequested) {
+            return entity;
+        }
+
+        bulletsToAdd.push(createBulletEntity());
+        return { ...entity, shooterStatus: { shotRequested: false } };
+    })
+
+    return updatedEntities.concat(bulletsToAdd);
 }
