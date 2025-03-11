@@ -45,7 +45,8 @@ export function inputSystem(entities, inputMonad) {
             "ArrowDown":  { x: 0, y: 4 }
         };
 
-        const velocity = Array.from(activeKeys).reduce((velocity, key) => {
+        const activeMovementKeys = Array.from(activeKeys).filter(key => keyToVelocity[key] !== undefined);
+        const velocity = activeMovementKeys.reduce((velocity, key) => {
             if (keyToVelocity[key] === undefined) {
                 return { x: 0, y: 0 };
             }
