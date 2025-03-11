@@ -28,6 +28,10 @@ const applySystems = composeSystems(
 );
 
 window.addEventListener("keydown", event => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(event.key)) {
+        event.preventDefault(); // prevent page from scrolling
+    }
+
     inputMonad = inputMonad.map(activeKeys => new Set(activeKeys).add(event.key));
 })
 

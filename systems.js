@@ -98,7 +98,6 @@ export function shotRequestProcessingSystem(entities, currentTime) {
 
         const shooterStatus = entity.shooterStatus;
         const isFirstShot = shooterStatus.lastShotTime === null;
-        console.log(shooterStatus.lastShotTime)
         if (isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs) {
             bulletsToAdd.push(createBulletEntity());
             return {
