@@ -94,7 +94,7 @@ export function shotRequestProcessingSystem(entities, timeMonad) {
         const shooterStatus = entity.shooterStatus;
         const isFirstShot = shooterStatus.lastShotTime === null;
         if (isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs) {
-            bulletsToAdd.push(createBulletEntity());
+            bulletsToAdd.push(createBulletEntity(entity, "east"));
             return {
                 ...entity,
                 shooterStatus: {
@@ -104,7 +104,6 @@ export function shotRequestProcessingSystem(entities, timeMonad) {
                 },
             };
         }
-
 
         return {
             ...entity,
