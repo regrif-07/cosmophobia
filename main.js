@@ -4,7 +4,7 @@ import {
     bulletCleaningSystem,
     composeSystems,
     inputSystem, logSystem,
-    physicsSystem,
+    physicsSystem, playerCollisionSystem,
     renderSystem,
     shotRequestProcessingSystem
 } from "./systems.js";
@@ -21,6 +21,7 @@ const applySystems = composeSystems(
     // logSystem,
     (entities) => bulletCleaningSystem(entities, canvasMonad),
     (entities) => shotRequestProcessingSystem(entities, timeMonad),
+    (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad),
     (entities) => renderSystem(entities, canvasMonad),

@@ -1,6 +1,7 @@
 import {CanvasMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
 import {createBulletEntity} from "./entities.js";
+import {clamp} from "./utility.js";
 
 export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
@@ -127,9 +128,34 @@ export function bulletCleaningSystem(entities, canvasMonad) {
         }
 
         let canvas = canvasMonad.getOrElse(null);
+        if (canvas === null) {
+            return true;
+        }
+
         return entity.position.x >= 0 && entity.position.x <= canvas.width &&
                entity.position.y >= 0 && entity.position.y <= canvas.height;
     })
+}
+
+export function playerCollisionSystem(entities, canvasMonad) {
+    return entities.map(entity => {
+        if (entity.type !== "player") {
+            return entity;
+        }
+
+        let canvas = canvasMonad.getOrElse(null);
+        if (canvas === null) {
+            return entity;
+        }
+
+        return {
+            ...entity,
+            position: {
+                x: clamp(entity.position.x, 0, canvas.width - entity.size.width),
+                y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
+            },
+        };
+    });
 }
 
 export function logSystem(entities) {
