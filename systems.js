@@ -62,14 +62,11 @@ export function inputSystem(entities, inputMonad) {
             };
         }, {x: 0, y: 0});
 
-        const shooterStatus = { shotRequested: false };
-        if (activeKeys.has(" ")) {
-            shooterStatus.shotRequested = true;
-        }
+        const shotRequested = activeKeys.has(" ");
 
         return entities.map(entity =>
             entity.type === "player"
-                ? { ...entity, velocity: velocity, shooterStatus }
+                ? { ...entity, velocity: velocity, shooterStatus: { ...entity.shooterStatus, shotRequested: shotRequested } }
                 : entity);
     });
 }
@@ -90,16 +87,38 @@ export function physicsSystem(entities) {
     });
 }
 
-export function shotRequestProcessingSystem(entities) {
+export function shotRequestProcessingSystem(entities, currentTime) {
     const bulletsToAdd = [];
 
     const updatedEntities = entities.map(entity => {
-        if (!hasComponents(entity, "shooterStatus") || !entity.shooterStatus.shotRequested) {
+        if (!hasComponents(entity, "shooterStatus") ||
+            !entity.shooterStatus.shotRequested) {
             return entity;
         }
 
-        bulletsToAdd.push(createBulletEntity());
-        return { ...entity, shooterStatus: { shotRequested: false } };
+        const shooterStatus = entity.shooterStatus;
+        const isFirstShot = shooterStatus.lastShotTime === null;
+        console.log(shooterStatus.lastShotTime)
+        if (isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs) {
+            bulletsToAdd.push(createBulletEntity());
+            return {
+                ...entity,
+                shooterStatus: {
+                    ...entity.shooterStatus,
+                    shotRequested: false,
+                    lastShotTime: currentTime,
+                },
+            };
+        }
+
+
+        return {
+            ...entity,
+            shooterStatus: {
+                ...shooterStatus,
+                shotRequested: false
+            }
+        };
     })
 
     return updatedEntities.concat(bulletsToAdd);

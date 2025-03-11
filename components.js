@@ -34,6 +34,8 @@ export function ShooterStatus() {
     return {
         shooterStatus: {
             shotRequested: false,
+            cooldownMs: 500,
+            lastShotTime: null,
         }
-    }
+    };
 }

@@ -9,11 +9,6 @@ import {
     shotRequestProcessingSystem
 } from "./systems.js";
 
-function gameLoop(initialEntities, applySystems) {
-    const updatedEntities = applySystems(initialEntities);
-    requestAnimationFrame(() => gameLoop(updatedEntities, applySystems));
-}
-
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
 let inputMonad = new InputMonad();
 
@@ -21,10 +16,12 @@ const entities = [
     createPlayerEntity(canvasMonad),
 ]
 
+let currentTime = Date.now();
+
 const applySystems = composeSystems(
-    logSystem,
+    // logSystem,
     (entities) => bulletCleaningSystem(entities, canvasMonad),
-    shotRequestProcessingSystem,
+    (entities) => shotRequestProcessingSystem(entities, currentTime),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad),
     (entities) => renderSystem(entities, canvasMonad),
@@ -43,3 +40,9 @@ window.addEventListener("keyup", event => {
 });
 
 gameLoop(entities, applySystems);
+
+function gameLoop(initialEntities, applySystems) {
+    currentTime = Date.now();
+    const updatedEntities = applySystems(initialEntities);
+    requestAnimationFrame(() => gameLoop(updatedEntities, applySystems));
+}
