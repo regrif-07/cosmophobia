@@ -1,4 +1,4 @@
-import {Position, ShooterStatus, SimplyRendered, Velocity} from "./components.js";
+import {Position, ShooterStatus, SimplyRendered, Size, Velocity} from "./components.js";
 
 let entityIdCounter = 0;
 export function createEntity(type, ...components) {
@@ -16,7 +16,8 @@ export function createPlayerEntity(canvasMonad) {
     return createEntity("player",
         Position(50, playerPositionY),
         Velocity(0, 0),
-        SimplyRendered(30, 30, "red"),
+        Size(30, 30),
+        SimplyRendered("red"),
         ShooterStatus(),
     );
 }
@@ -25,6 +26,7 @@ export function createBulletEntity() {
     return createEntity("bullet",
         Position(50, 50),
         Velocity(10, 0),
-        SimplyRendered(30, 10)
+        Size(30, 10),
+        SimplyRendered("black"),
     );
 }

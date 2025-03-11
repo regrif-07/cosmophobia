@@ -11,23 +11,17 @@ export function renderSystem(entities, canvasMonad) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        entities.filter(entity => hasComponents(entity, "position")).forEach(entity => {
-            if (!entity.position)
-            {
-                return entity;
-            }
-
-            if (entity.simplyRendered)
-            {
+        entities
+            .filter(entity => hasComponents(entity, "position", "size", "simplyRendered"))
+            .forEach(entity => {
                 ctx.fillStyle = entity.simplyRendered.color;
                 ctx.fillRect(
                     entity.position.x,
                     entity.position.y,
-                    entity.simplyRendered.width,
-                    entity.simplyRendered.height
+                    entity.size.width,
+                    entity.size.height
                 );
-            }
-        });
+            });
 
         return new CanvasMonad(canvas);
     })

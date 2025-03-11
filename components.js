@@ -20,11 +20,18 @@ export function Velocity(x, y) {
     };
 }
 
-export function SimplyRendered(width, height, color) {
+export function Size(width, height) {
     return {
-        simplyRendered: {
+        size: {
             width: width,
             height: height,
+        },
+    };
+}
+
+export function SimplyRendered(color) {
+    return {
+        simplyRendered: {
             color: color,
         },
     };
