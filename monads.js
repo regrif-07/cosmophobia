@@ -41,3 +41,37 @@ export class InputMonad {
         return this.activeKeys.size ? this.activeKeys : defaultValue;
     }
 }
+
+export class TimeMonad {
+    constructor(timestamp = null) {
+        this.timestamp = (timestamp === null) ? Date.now() : timestamp;
+    }
+
+    static now() {
+        return new TimeMonad(Date.now());
+    }
+
+    map(func) {
+        return (this.timestamp !== null) ? new TimeMonad(func(this.timestamp)) : new TimeMonad(null);
+    }
+
+    chain(func) {
+        return (this.timestamp !== null) ? func(this.timestamp) : new TimeMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.timestamp !== null) ? this.timestamp : defaultValue;
+    }
+
+    diff(otherTimeMonad) {
+        return (this.timestamp !== null)
+            ? this.timestamp - otherTimeMonad.getOrElse(this.timestamp)
+            : new TimeMonad(null);
+    }
+
+    hasElapsed(otherTimeMonad, milliseconds) {
+        return this.timestamp !== null &&
+               otherTimeMonad.getOrElse(null) !== null &&
+               (this.timestamp - otherTimeMonad.getOrElse(0)) >= milliseconds;
+    }
+}

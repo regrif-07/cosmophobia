@@ -81,8 +81,9 @@ export function physicsSystem(entities) {
     });
 }
 
-export function shotRequestProcessingSystem(entities, currentTime) {
+export function shotRequestProcessingSystem(entities, timeMonad) {
     const bulletsToAdd = [];
+    const currentTime = timeMonad.getOrElse(0);
 
     const updatedEntities = entities.map(entity => {
         if (!hasComponents(entity, "shooterStatus") ||
