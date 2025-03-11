@@ -18,7 +18,7 @@ export function createPlayerEntity(canvasMonad) {
         Velocity(0, 0),
         Size(30, 30),
         SimplyRendered("red"),
-        ShooterStatus(),
+        ShooterStatus(500),
     );
 }
 

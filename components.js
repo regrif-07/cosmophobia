@@ -37,11 +37,11 @@ export function SimplyRendered(color) {
     };
 }
 
-export function ShooterStatus() {
+export function ShooterStatus(cooldownMs) {
     return {
         shooterStatus: {
             shotRequested: false,
-            cooldownMs: 500,
+            cooldownMs: cooldownMs,
             lastShotTime: null,
         }
     };
