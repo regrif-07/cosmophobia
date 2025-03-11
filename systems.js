@@ -47,10 +47,6 @@ export function inputSystem(entities, inputMonad) {
 
         const activeMovementKeys = Array.from(activeKeys).filter(key => keyToVelocity[key] !== undefined);
         const velocity = activeMovementKeys.reduce((velocity, key) => {
-            if (keyToVelocity[key] === undefined) {
-                return { x: 0, y: 0 };
-            }
-
             return {
                 x: velocity.x + keyToVelocity[key].x,
                 y: velocity.y + keyToVelocity[key].y,
@@ -61,7 +57,13 @@ export function inputSystem(entities, inputMonad) {
 
         return entities.map(entity =>
             entity.type === "player"
-                ? { ...entity, velocity: velocity, shooterStatus: { ...entity.shooterStatus, shotRequested: shotRequested } }
+                ? {
+                    ...entity,
+                    velocity: velocity,
+                    shooterStatus: {
+                        ...entity.shooterStatus, shotRequested: shotRequested
+                    }
+                }
                 : entity);
     });
 }
