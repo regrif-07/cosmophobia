@@ -75,3 +75,21 @@ export class TimeMonad {
                (this.timestamp - otherTimeMonad.getOrElse(0)) >= milliseconds;
     }
 }
+
+export class AssetsMonad {
+    constructor(assets = null) {
+        this.assets = (assets === null) ? {} : assets;
+    }
+
+    map(func) {
+        return (this.assets !== null) ? new AssetsMonad(func(this.assets)) : new AssetsMonad(null);
+    }
+
+    chain(func) {
+        return (this.assets !== null) ? func(this.assets) : new AssetsMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.assets !== null) ? this.assets : defaultValue;
+    }
+}
