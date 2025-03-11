@@ -25,20 +25,20 @@ export class CanvasMonad {
 }
 
 export class InputMonad {
-    constructor(activeKeys = new Set()) {
-        this.activeKeys = activeKeys;
+    constructor(activeKeys = null) {
+        this.activeKeys = (activeKeys === null) ? new Set() : activeKeys;
     }
 
     map(func) {
-        return new InputMonad(func(this.activeKeys));
+        return (this.activeKeys !== null) ? new InputMonad(func(this.activeKeys)) : new InputMonad(null);
     }
 
     chain(func) {
-        return func(this.activeKeys);
+        return (this.activeKeys !== null) ? func(this.activeKeys) : new InputMonad(null);
     }
 
     getOrElse(defaultValue) {
-        return this.activeKeys.size ? this.activeKeys : defaultValue;
+        return (this.activeKeys !== null) ? this.activeKeys : defaultValue;
     }
 }
 
