@@ -1,4 +1,4 @@
-import {CanvasMonad, InputMonad, TimeMonad} from "./monads.js";
+import {CanvasMonad, ConfigMonad, InputMonad, TimeMonad} from "./monads.js";
 import { createPlayerEntity } from "./entities.js";
 import {
     bulletCleaningSystem,
@@ -10,28 +10,29 @@ import {
 } from "./systems.js";
 import {preloadImages} from "./assets-management.js";
 
+const configMonad = new ConfigMonad();
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
-const assetsMonad = await preloadImages(
-    "assets/background.png",
-    "assets/player-ship.png",
-    "assets/bullet.png",
-);
+const assetsMonad = await preloadImages(...Object.values(configMonad.getAssetPaths()));
 let inputMonad = new InputMonad();
 let timeMonad = TimeMonad.now();
 
 const entities = [
-    createPlayerEntity(canvasMonad, assetsMonad),
+    createPlayerEntity(canvasMonad, assetsMonad, configMonad),
 ]
 
-const applySystems = composeSystems(
-    // logSystem,
+const systems = [
     (entities) => bulletCleaningSystem(entities, canvasMonad),
-    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad),
+    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
-    (entities) => inputSystem(entities, inputMonad),
+    (entities) => inputSystem(entities, inputMonad, configMonad),
     (entities) => renderSystem(entities, canvasMonad, assetsMonad),
-);
+]
+if (configMonad.getDebug().enableLogging) {
+    systems.unshift(logSystem);
+}
+
+const applySystems = composeSystems(...systems);
 
 window.addEventListener("keydown", event => {
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(event.key)) {

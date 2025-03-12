@@ -10,30 +10,33 @@ export function createEntity(type, ...components) {
     );
 }
 
-export function createPlayerEntity(canvasMonad, assetsMonad) {
+export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
     const canvas = canvasMonad.getOrElse(null);
-    const playerPositionY = canvas ? canvas.height / 2 : 0;
+    const playerPositionY = canvas ? canvas.height / 2 : 0; // center player ship vertically
 
-    const size = getAssetImageSize(assetsMonad, "assets/player-ship.png")
+    const playerImagePath = configMonad.getAssetPaths().playerShip;
+    const size = getAssetImageSize(assetsMonad, playerImagePath);
 
+    const playerConfig = configMonad.getPlayerConfig();
     return createEntity("player",
-        Position(50, playerPositionY),
+        Position(playerConfig.startPositionXOffset, playerPositionY),
         Velocity(0, 0),
         Size(size.width, size.height),
-        ImageRendered("assets/player-ship.png"),
-        SimplyRendered("red"),
-        ShooterStatus(500),
+        ImageRendered(playerImagePath),
+        SimplyRendered(playerConfig.simpleRenderingColor),
+        ShooterStatus(playerConfig.shootingCooldownMs),
     );
 }
 
-export function createBulletEntity(shootingEntity, direction, assetsMonad) {
+export function createBulletEntity(shootingEntity, direction, assetsMonad, configMonad) {
     if (!hasComponents(shootingEntity, "position", "size", "shooterStatus")) {
         return null;
     }
 
+    const bulletImagePath = configMonad.getAssetPaths().bullet;
     // size for horizontal shooting
     // flip values for vertical
-    const bulletSize = getAssetImageSize(assetsMonad, "assets/bullet.png");
+    const bulletSize = getAssetImageSize(assetsMonad, bulletImagePath);
 
     const middleShootingEntityXPosition = shootingEntity.position.x +
         shootingEntity.size.width / 2 -
@@ -41,6 +44,8 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
     const middleShootingEntityYPosition = shootingEntity.position.y +
         shootingEntity.size.height / 2 -
         bulletSize.height / 2;
+
+    const bulletConfig = configMonad.getBulletConfig();
 
     let position = Position(0, 0);
     let velocity = Velocity(0, 0);
@@ -50,7 +55,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
                 middleShootingEntityXPosition,
                 shootingEntity.position.y - bulletSize.width,
             );
-            velocity = Velocity(0, -10);
+            velocity = Velocity(0, -bulletConfig.speed);
 
             break;
 
@@ -59,7 +64,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
                 middleShootingEntityXPosition,
                 shootingEntity.position.y + shootingEntity.size.height
             );
-            velocity = Velocity(0, 10);
+            velocity = Velocity(0, bulletConfig.speed);
 
             break;
 
@@ -68,7 +73,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
                 shootingEntity.position.x - bulletSize.width,
                 middleShootingEntityYPosition
             );
-            velocity = Velocity(-10, 0);
+            velocity = Velocity(-bulletConfig.speed, 0);
 
             break;
 
@@ -77,7 +82,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
                 shootingEntity.position.x + shootingEntity.size.width,
                 middleShootingEntityYPosition,
             );
-            velocity = Velocity(10, 0);
+            velocity = Velocity(bulletConfig.speed, 0);
 
             break;
     }
@@ -91,7 +96,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
         position,
         velocity,
         size,
-        ImageRendered("assets/bullet.png"),
-        SimplyRendered("black"),
+        ImageRendered(bulletImagePath),
+        SimplyRendered(bulletConfig.simpleRenderingColor),
     );
 }

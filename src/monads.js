@@ -9,9 +9,11 @@ export class ConfigMonad {
                 speed: 4,
                 startPositionXOffset: 50,
                 shootingCooldownMs: 500,
+                simpleRenderingColor: "green",
             },
             bullet: {
                 speed: 10,
+                simpleRenderingColor: "black",
             },
             assetPaths: {
                 background: "assets/background.png",
@@ -46,6 +48,10 @@ export class ConfigMonad {
 
     getAssetPaths() {
         return this.config?.assetPaths || ConfigMonad.defaultConfig().assetPaths;
+    }
+
+    getDebug() {
+        return this.config?.debug || ConfigMonad.defaultConfig().debug;
     }
 }
 
