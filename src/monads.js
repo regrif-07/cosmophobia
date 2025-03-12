@@ -11,6 +11,13 @@ export class ConfigMonad {
                 shootingCooldownMs: 500,
                 simpleRenderingColor: "green",
             },
+            controls: {
+                moveLeft: "ArrowLeft",
+                moveRight: "ArrowRight",
+                moveUp: "ArrowUp",
+                moveDown: "ArrowDown",
+                shoot: " ",
+            },
             bullet: {
                 speed: 10,
                 simpleRenderingColor: "black",
@@ -40,6 +47,10 @@ export class ConfigMonad {
 
     getPlayerConfig() {
         return this.config?.player || ConfigMonad.defaultConfig().player;
+    }
+
+    getControlsConfig() {
+        return this.config?.controls || ConfigMonad.defaultConfig().controls;
     }
 
     getBulletConfig() {

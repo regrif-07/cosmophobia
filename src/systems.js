@@ -58,12 +58,14 @@ export function inputSystem(entities, inputMonad, configMonad) {
                     : entity);
         }
 
+        const controlsConfig = configMonad.getControlsConfig();
         const playerSpeed = configMonad.getPlayerConfig().speed;
+
         const keyToVelocity = {
-            "ArrowLeft":  { x: -playerSpeed, y: 0 },
-            "ArrowRight": { x: playerSpeed, y: 0 },
-            "ArrowUp":    { x: 0, y: -playerSpeed },
-            "ArrowDown":  { x: 0, y: playerSpeed }
+            [controlsConfig.moveLeft]: { x: -playerSpeed, y: 0 },
+            [controlsConfig.moveRight]: { x: playerSpeed, y: 0 },
+            [controlsConfig.moveUp]: { x: 0, y: -playerSpeed },
+            [controlsConfig.moveDown]: { x: 0, y: playerSpeed }
         };
 
         const activeMovementKeys = Array.from(activeKeys).filter(key => keyToVelocity[key] !== undefined);
@@ -74,7 +76,7 @@ export function inputSystem(entities, inputMonad, configMonad) {
             };
         }, {x: 0, y: 0});
 
-        const shotRequested = activeKeys.has(" ");
+        const shotRequested = activeKeys.has(controlsConfig.shoot);
 
         return entities.map(entity =>
             entity.type === "player"
