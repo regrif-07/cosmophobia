@@ -104,7 +104,7 @@ export function physicsSystem(entities) {
     });
 }
 
-export function shotRequestProcessingSystem(entities, timeMonad) {
+export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad) {
     const bulletsToAdd = [];
     const currentTime = timeMonad.getOrElse(0);
 
@@ -119,7 +119,7 @@ export function shotRequestProcessingSystem(entities, timeMonad) {
         const canShoot = isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs;
 
         if (canShoot) {
-            bulletsToAdd.push(createBulletEntity(entity, "east"));
+            bulletsToAdd.push(createBulletEntity(entity, "east", assetsMonad));
             return {
                 ...entity,
                 shooterStatus: {

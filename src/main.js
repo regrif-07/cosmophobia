@@ -20,13 +20,13 @@ let inputMonad = new InputMonad();
 let timeMonad = TimeMonad.now();
 
 const entities = [
-    createPlayerEntity(canvasMonad),
+    createPlayerEntity(canvasMonad, assetsMonad),
 ]
 
 const applySystems = composeSystems(
     // logSystem,
     (entities) => bulletCleaningSystem(entities, canvasMonad),
-    (entities) => shotRequestProcessingSystem(entities, timeMonad),
+    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad),
