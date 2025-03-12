@@ -35,8 +35,12 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
     // flip values for vertical
     const bulletSize = getAssetImageSize(assetsMonad, "assets/bullet.png");
 
-    const middleShootingEntityXPosition = shootingEntity.position.x + shootingEntity.size.width / 2;
-    const middleShootingEntityYPosition = shootingEntity.position.y + shootingEntity.size.height / 2;
+    const middleShootingEntityXPosition = shootingEntity.position.x +
+        shootingEntity.size.width / 2 -
+        bulletSize.width / 2;
+    const middleShootingEntityYPosition = shootingEntity.position.y +
+        shootingEntity.size.height / 2 -
+        bulletSize.height / 2;
 
     let position = Position(0, 0);
     let velocity = Velocity(0, 0);
@@ -71,7 +75,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad) {
         case "east":
             position = Position(
                 shootingEntity.position.x + shootingEntity.size.width,
-                middleShootingEntityYPosition
+                middleShootingEntityYPosition,
             );
             velocity = Velocity(10, 0);
 
