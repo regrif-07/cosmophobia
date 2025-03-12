@@ -26,7 +26,7 @@ const systems = [
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad, configMonad),
-    (entities) => renderSystem(entities, canvasMonad, assetsMonad),
+    (entities) => renderSystem(entities, canvasMonad, assetsMonad, configMonad),
 ]
 if (configMonad.getDebug().enableLogging) {
     systems.unshift(logSystem);

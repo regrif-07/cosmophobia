@@ -10,6 +10,7 @@ export class ConfigMonad {
                 startPositionXOffset: 50,
                 shootingCooldownMs: 500,
                 simpleRenderingColor: "green",
+                shootDirection: "east",
             },
             controls: {
                 moveLeft: "ArrowLeft",

@@ -7,13 +7,19 @@ export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
 }
 
-export function renderSystem(entities, canvasMonad, assetsMonad) {
+export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
     canvasMonad.chain(canvas => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         assetsMonad.chain(assets => {
-            ctx.drawImage(assets["assets/background.png"], 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+                assets[configMonad.getAssetPaths().background],
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
             entities
                 .filter(entity => hasComponents(entity, "position", "size"))
@@ -122,7 +128,12 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
         const canShoot = isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs;
 
         if (canShoot) {
-            bulletsToAdd.push(createBulletEntity(entity, "east", assetsMonad, configMonad));
+            bulletsToAdd.push(createBulletEntity(
+                entity,
+                configMonad.getPlayerConfig().shootDirection,
+                assetsMonad,
+                configMonad
+            ));
             return {
                 ...entity,
                 shooterStatus: {
