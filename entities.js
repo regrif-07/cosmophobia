@@ -16,7 +16,7 @@ export function createPlayerEntity(canvasMonad) {
     return createEntity("player",
         Position(50, playerPositionY),
         Velocity(0, 0),
-        Size(135, 124),
+        Size(68, 62),
         ImageRendered("player-ship.png"),
         SimplyRendered("red"),
         ShooterStatus(500),
