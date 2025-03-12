@@ -12,7 +12,8 @@ import {preloadImages} from "./assets-management.js";
 
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
 const assetsMonad = await preloadImages(
-    "assets/player-ship.png"
+    "assets/player-ship.png",
+    "assets/bullet.png",
 );
 let inputMonad = new InputMonad();
 let timeMonad = TimeMonad.now();
