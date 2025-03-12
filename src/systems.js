@@ -13,6 +13,8 @@ export function renderSystem(entities, canvasMonad, assetsMonad) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         assetsMonad.chain(assets => {
+            ctx.drawImage(assets["assets/background.png"], 0, 0, canvas.width, canvas.height);
+
             entities
                 .filter(entity => hasComponents(entity, "position", "size"))
                 .forEach(entity => {
