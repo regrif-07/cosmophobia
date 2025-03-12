@@ -1,3 +1,54 @@
+export class ConfigMonad {
+    constructor(config = null) {
+        this.config = config === null ? ConfigMonad.defaultConfig() : config;
+    }
+
+    static defaultConfig() {
+        return {
+            player: {
+                speed: 4,
+                startPositionXOffset: 50,
+                shootingCooldownMs: 500,
+            },
+            bullet: {
+                speed: 10,
+            },
+            assetPaths: {
+                background: "assets/background.png",
+                playerShip: "assets/player-ship.png",
+                bullet: "assets/bullet.png",
+            },
+            debug: {
+                enableLogging: false,
+            },
+        };
+    }
+
+    map(func) {
+        return (this.config !== null) ? new ConfigMonad(func(this.config)) : new ConfigMonad(null);
+    }
+
+    chain(func) {
+        return (this.config !== null) ? func(this.config) : new ConfigMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.config !== null) ? this.config : defaultValue;
+    }
+
+    getPlayerConfig() {
+        return this.config?.player || ConfigMonad.defaultConfig().player;
+    }
+
+    getBulletConfig() {
+        return this.config?.bullet || ConfigMonad.defaultConfig().bullet
+    }
+
+    getAssetPaths() {
+        return this.config?.assetPaths || ConfigMonad.defaultConfig().assetPaths;
+    }
+}
+
 export class CanvasMonad {
     constructor(canvas) {
         this.canvas = canvas;
