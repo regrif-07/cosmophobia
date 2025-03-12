@@ -153,8 +153,8 @@ export function bulletCleaningSystem(entities, canvasMonad) {
             return true;
         }
 
-        return entity.position.x >= 0 && entity.position.x <= canvas.width &&
-               entity.position.y >= 0 && entity.position.y <= canvas.height;
+        return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
+               entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
     })
 }
 
