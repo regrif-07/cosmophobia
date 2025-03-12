@@ -62,18 +62,6 @@ export class TimeMonad {
     getOrElse(defaultValue) {
         return (this.timestamp !== null) ? this.timestamp : defaultValue;
     }
-
-    diff(otherTimeMonad) {
-        return (this.timestamp !== null)
-            ? this.timestamp - otherTimeMonad.getOrElse(this.timestamp)
-            : new TimeMonad(null);
-    }
-
-    hasElapsed(otherTimeMonad, milliseconds) {
-        return this.timestamp !== null &&
-               otherTimeMonad.getOrElse(null) !== null &&
-               (this.timestamp - otherTimeMonad.getOrElse(0)) >= milliseconds;
-    }
 }
 
 export class AssetsMonad {
