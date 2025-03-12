@@ -1,4 +1,4 @@
-import {hasComponents, Position, ShooterStatus, SimplyRendered, Size, Velocity} from "./components.js";
+import {hasComponents, ImageRendered, Position, ShooterStatus, SimplyRendered, Size, Velocity} from "./components.js";
 
 let entityIdCounter = 0;
 export function createEntity(type, ...components) {
@@ -16,7 +16,8 @@ export function createPlayerEntity(canvasMonad) {
     return createEntity("player",
         Position(50, playerPositionY),
         Velocity(0, 0),
-        Size(30, 30),
+        Size(68, 62),
+        ImageRendered("assets/player-ship.png"),
         SimplyRendered("red"),
         ShooterStatus(500),
     );
@@ -29,8 +30,8 @@ export function createBulletEntity(shootingEntity, direction) {
 
     // size for horizontal shooting
     // flip values for vertical
-    const bulletWidth = 30;
-    const bulletHeight = 10;
+    const bulletWidth = 35;
+    const bulletHeight = 18;
 
     const middleShootingEntityXPosition = shootingEntity.position.x + shootingEntity.size.width / 2;
     const middleShootingEntityYPosition = shootingEntity.position.y + shootingEntity.size.height / 2;
@@ -82,6 +83,7 @@ export function createBulletEntity(shootingEntity, direction) {
         position,
         velocity,
         size,
+        ImageRendered("assets/bullet.png"),
         SimplyRendered("black"),
     );
 }

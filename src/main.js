@@ -8,8 +8,14 @@ import {
     renderSystem,
     shotRequestProcessingSystem
 } from "./systems.js";
+import {preloadImages} from "./assets-management.js";
 
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas"));
+const assetsMonad = await preloadImages(
+    "assets/background.png",
+    "assets/player-ship.png",
+    "assets/bullet.png",
+);
 let inputMonad = new InputMonad();
 let timeMonad = TimeMonad.now();
 
@@ -24,7 +30,7 @@ const applySystems = composeSystems(
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad),
-    (entities) => renderSystem(entities, canvasMonad),
+    (entities) => renderSystem(entities, canvasMonad, assetsMonad),
 );
 
 window.addEventListener("keydown", event => {
