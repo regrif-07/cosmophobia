@@ -1,3 +1,72 @@
+export class ConfigMonad {
+    constructor(config = null) {
+        this.config = config === null ? ConfigMonad.defaultConfig() : config;
+    }
+
+    static defaultConfig() {
+        return {
+            player: {
+                speed: 4,
+                startPositionXOffset: 50,
+                shootingCooldownMs: 500,
+                simpleRenderingColor: "green",
+                shootDirection: "east",
+            },
+            controls: {
+                moveLeft: "ArrowLeft",
+                moveRight: "ArrowRight",
+                moveUp: "ArrowUp",
+                moveDown: "ArrowDown",
+                shoot: " ",
+            },
+            bullet: {
+                speed: 10,
+                simpleRenderingColor: "black",
+            },
+            assetPaths: {
+                background: "assets/background.png",
+                playerShip: "assets/player-ship.png",
+                bullet: "assets/bullet.png",
+            },
+            debug: {
+                enableLogging: false,
+            },
+        };
+    }
+
+    map(func) {
+        return (this.config !== null) ? new ConfigMonad(func(this.config)) : new ConfigMonad(null);
+    }
+
+    chain(func) {
+        return (this.config !== null) ? func(this.config) : new ConfigMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.config !== null) ? this.config : defaultValue;
+    }
+
+    getPlayerConfig() {
+        return this.config?.player || ConfigMonad.defaultConfig().player;
+    }
+
+    getControlsConfig() {
+        return this.config?.controls || ConfigMonad.defaultConfig().controls;
+    }
+
+    getBulletConfig() {
+        return this.config?.bullet || ConfigMonad.defaultConfig().bullet
+    }
+
+    getAssetPaths() {
+        return this.config?.assetPaths || ConfigMonad.defaultConfig().assetPaths;
+    }
+
+    getDebug() {
+        return this.config?.debug || ConfigMonad.defaultConfig().debug;
+    }
+}
+
 export class CanvasMonad {
     constructor(canvas) {
         this.canvas = canvas;
@@ -61,18 +130,6 @@ export class TimeMonad {
 
     getOrElse(defaultValue) {
         return (this.timestamp !== null) ? this.timestamp : defaultValue;
-    }
-
-    diff(otherTimeMonad) {
-        return (this.timestamp !== null)
-            ? this.timestamp - otherTimeMonad.getOrElse(this.timestamp)
-            : new TimeMonad(null);
-    }
-
-    hasElapsed(otherTimeMonad, milliseconds) {
-        return this.timestamp !== null &&
-               otherTimeMonad.getOrElse(null) !== null &&
-               (this.timestamp - otherTimeMonad.getOrElse(0)) >= milliseconds;
     }
 }
 

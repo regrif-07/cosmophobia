@@ -7,13 +7,19 @@ export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
 }
 
-export function renderSystem(entities, canvasMonad, assetsMonad) {
+export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
     canvasMonad.chain(canvas => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         assetsMonad.chain(assets => {
-            ctx.drawImage(assets["assets/background.png"], 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+                assets[configMonad.getAssetPaths().background],
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
             entities
                 .filter(entity => hasComponents(entity, "position", "size"))
@@ -49,7 +55,7 @@ export function renderSystem(entities, canvasMonad, assetsMonad) {
     return entities;
 }
 
-export function inputSystem(entities, inputMonad) {
+export function inputSystem(entities, inputMonad, configMonad) {
     return inputMonad.chain(activeKeys => {
         if (activeKeys.size === 0) {
             return entities.map(entity =>
@@ -58,11 +64,14 @@ export function inputSystem(entities, inputMonad) {
                     : entity);
         }
 
+        const controlsConfig = configMonad.getControlsConfig();
+        const playerSpeed = configMonad.getPlayerConfig().speed;
+
         const keyToVelocity = {
-            "ArrowLeft":  { x: -4, y: 0 },
-            "ArrowRight": { x: 4, y: 0 },
-            "ArrowUp":    { x: 0, y: -4 },
-            "ArrowDown":  { x: 0, y: 4 }
+            [controlsConfig.moveLeft]: { x: -playerSpeed, y: 0 },
+            [controlsConfig.moveRight]: { x: playerSpeed, y: 0 },
+            [controlsConfig.moveUp]: { x: 0, y: -playerSpeed },
+            [controlsConfig.moveDown]: { x: 0, y: playerSpeed }
         };
 
         const activeMovementKeys = Array.from(activeKeys).filter(key => keyToVelocity[key] !== undefined);
@@ -73,7 +82,7 @@ export function inputSystem(entities, inputMonad) {
             };
         }, {x: 0, y: 0});
 
-        const shotRequested = activeKeys.has(" ");
+        const shotRequested = activeKeys.has(controlsConfig.shoot);
 
         return entities.map(entity =>
             entity.type === "player"
@@ -104,7 +113,7 @@ export function physicsSystem(entities) {
     });
 }
 
-export function shotRequestProcessingSystem(entities, timeMonad) {
+export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad) {
     const bulletsToAdd = [];
     const currentTime = timeMonad.getOrElse(0);
 
@@ -116,8 +125,15 @@ export function shotRequestProcessingSystem(entities, timeMonad) {
 
         const shooterStatus = entity.shooterStatus;
         const isFirstShot = shooterStatus.lastShotTime === null;
-        if (isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs) {
-            bulletsToAdd.push(createBulletEntity(entity, "east"));
+        const canShoot = isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs;
+
+        if (canShoot) {
+            bulletsToAdd.push(createBulletEntity(
+                entity,
+                configMonad.getPlayerConfig().shootDirection,
+                assetsMonad,
+                configMonad
+            ));
             return {
                 ...entity,
                 shooterStatus: {
@@ -151,8 +167,8 @@ export function bulletCleaningSystem(entities, canvasMonad) {
             return true;
         }
 
-        return entity.position.x >= 0 && entity.position.x <= canvas.width &&
-               entity.position.y >= 0 && entity.position.y <= canvas.height;
+        return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
+               entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
     })
 }
 
