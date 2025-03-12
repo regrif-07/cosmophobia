@@ -1,4 +1,4 @@
-import {hasComponents, Position, ShooterStatus, SimplyRendered, Size, Velocity} from "./components.js";
+import {hasComponents, ImageRendered, Position, ShooterStatus, SimplyRendered, Size, Velocity} from "./components.js";
 
 let entityIdCounter = 0;
 export function createEntity(type, ...components) {
@@ -16,7 +16,8 @@ export function createPlayerEntity(canvasMonad) {
     return createEntity("player",
         Position(50, playerPositionY),
         Velocity(0, 0),
-        Size(30, 30),
+        Size(135, 124),
+        ImageRendered("player-ship.png"),
         SimplyRendered("red"),
         ShooterStatus(500),
     );

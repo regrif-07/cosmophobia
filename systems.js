@@ -1,4 +1,4 @@
-import {CanvasMonad} from "./monads.js";
+import {AssetsMonad, CanvasMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
 import {createBulletEntity} from "./entities.js";
 import {clamp} from "./utility.js";
@@ -7,22 +7,39 @@ export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
 }
 
-export function renderSystem(entities, canvasMonad) {
+export function renderSystem(entities, canvasMonad, assetsMonad) {
     canvasMonad.chain(canvas => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        entities
-            .filter(entity => hasComponents(entity, "position", "size", "simplyRendered"))
-            .forEach(entity => {
-                ctx.fillStyle = entity.simplyRendered.color;
-                ctx.fillRect(
-                    entity.position.x,
-                    entity.position.y,
-                    entity.size.width,
-                    entity.size.height
-                );
-            });
+        assetsMonad.chain(assets => {
+            entities
+                .filter(entity => hasComponents(entity, "position", "size"))
+                .forEach(entity => {
+                    if (hasComponents(entity, "imageRendered")) {
+                        const image = assets[entity.imageRendered.imageUrl];
+                        if (image) {
+                            ctx.drawImage(
+                                image,
+                                entity.position.x,
+                                entity.position.y,
+                                entity.size.width,
+                                entity.size.height
+                            );
+                        }
+                    } else if (hasComponents(entity, "simplyRendered")) {
+                        ctx.fillStyle = entity.simplyRendered.color;
+                        ctx.fillRect(
+                            entity.position.x,
+                            entity.position.y,
+                            entity.size.width,
+                            entity.size.height
+                        );
+                    }
+                });
+
+            return new AssetsMonad(assets);
+        });
 
         return new CanvasMonad(canvas);
     })

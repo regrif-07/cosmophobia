@@ -37,6 +37,14 @@ export function SimplyRendered(color) {
     };
 }
 
+export function ImageRendered(imageUrl) {
+    return {
+        imageRendered: {
+            imageUrl: imageUrl,
+        }
+    };
+}
+
 export function ShooterStatus(cooldownMs) {
     return {
         shooterStatus: {
