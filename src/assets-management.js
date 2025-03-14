@@ -1,5 +1,8 @@
 import {AssetsMonad} from "./monads.js";
 
+// this function is based on something I round in the internet
+// for each provided image url create a promise that should load that image
+// after that, wait for all promises to resolve and combine results into the AssetsMonad
 export function preloadImages(...imageUrls) {
     const uniqueUrls = [...new Set(imageUrls)];
 

@@ -1,8 +1,10 @@
+// encapsulate our global config
 export class ConfigMonad {
     constructor(config = null) {
         this.config = config === null ? ConfigMonad.defaultConfig() : config;
     }
 
+    // provide the default config (modify values here)
     static defaultConfig() {
         return {
             player: {
@@ -46,6 +48,8 @@ export class ConfigMonad {
         return (this.config !== null) ? this.config : defaultValue;
     }
 
+    // helper functions that will return whatever section of config you would like
+
     getPlayerConfig() {
         return this.config?.player || ConfigMonad.defaultConfig().player;
     }
@@ -67,6 +71,7 @@ export class ConfigMonad {
     }
 }
 
+// encapsulate our canvas
 export class CanvasMonad {
     constructor(canvas) {
         this.canvas = canvas;
@@ -93,6 +98,8 @@ export class CanvasMonad {
     }
 }
 
+// encapsulate our input state
+// contains activeKeys filed that represent currently pressed keys (it's a set, so keys are unique)
 export class InputMonad {
     constructor(activeKeys = null) {
         this.activeKeys = (activeKeys === null) ? new Set() : activeKeys;
@@ -111,6 +118,7 @@ export class InputMonad {
     }
 }
 
+// encapsulate timestamp (used to handle current time on each game loop iteration)
 export class TimeMonad {
     constructor(timestamp = null) {
         this.timestamp = (timestamp === null) ? Date.now() : timestamp;
@@ -133,6 +141,7 @@ export class TimeMonad {
     }
 }
 
+// encapsulate the mapping from asset path to asset object
 export class AssetsMonad {
     constructor(assets = null) {
         this.assets = (assets === null) ? {} : assets;
