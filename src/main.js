@@ -16,7 +16,7 @@ const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas")); // e
 const assetsMonad = await preloadImages(...Object.values(configMonad.getAssetPaths())); // handle all game assets
 let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
-const randomMonad = new RandomMonad(); // handle random number generation
+const randomMonad = new RandomMonad(); // handle random based functionality
 
 // create all entities
 const entities = [
@@ -24,7 +24,7 @@ const entities = [
 ]
 
 // list of all systems to compose
-const systems = [
+let systems = [
     (entities) => bulletCleaningSystem(entities, canvasMonad),
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
@@ -35,7 +35,7 @@ const systems = [
 
 // if logging is enabled, insert loggingSystem in the first position
 if (configMonad.getDebug().enableLogging) {
-    systems.unshift(logSystem);
+    systems = [logSystem, ...systems];
 }
 
 // compose all systems

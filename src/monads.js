@@ -205,7 +205,7 @@ export class RandomMonad {
         return this.randomState?.lastValue;
     }
 
-    // generate next random value from 0 to 1
+    // generate next random value from 0 (inclusive) to 1 (exclusive)
     next() {
         if (this.randomState === null) {
             return new RandomMonad(null);
