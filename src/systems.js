@@ -3,14 +3,16 @@ import {hasComponents} from "./components.js";
 import {createBulletEntity} from "./entities.js";
 import {clamp} from "./utility.js";
 
+// compose system functions into one beefy function
 export function composeSystems(...systems) {
     return systems.reduceRight((composed, system) => entities => system(composed(entities)));
 }
 
+// handle all rendering in the game
 export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
     canvasMonad.chain(canvas => {
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear canvas to construct new frame from scratch
 
         assetsMonad.chain(assets => {
             ctx.drawImage(
@@ -19,12 +21,14 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
                 0,
                 canvas.width,
                 canvas.height
-            );
+            ); // draw the background
 
             entities
+                // cannot handle entities without position and size
                 .filter(entity => hasComponents(entity, "position", "size"))
                 .forEach(entity => {
                     if (hasComponents(entity, "imageRendered")) {
+                        // render as image
                         const image = assets[entity.imageRendered.imageUrl];
                         if (image) {
                             ctx.drawImage(
@@ -36,6 +40,7 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
                             );
                         }
                     } else if (hasComponents(entity, "simplyRendered")) {
+                        // simplified render (not working due to entity size being based on image size)
                         ctx.fillStyle = entity.simplyRendered.color;
                         ctx.fillRect(
                             entity.position.x,
@@ -50,13 +55,15 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
         });
 
         return new CanvasMonad(canvas);
-    })
+    });
 
-    return entities;
+    return entities; // entities are not affected by this system
 }
 
+// update player entity based on input state
 export function inputSystem(entities, inputMonad, configMonad) {
     return inputMonad.chain(activeKeys => {
+        // if no keys are pressed, reset player velocity
         if (activeKeys.size === 0) {
             return entities.map(entity =>
                 entity.type === "player"
@@ -67,6 +74,7 @@ export function inputSystem(entities, inputMonad, configMonad) {
         const controlsConfig = configMonad.getControlsConfig();
         const playerSpeed = configMonad.getPlayerConfig().speed;
 
+        // maps pressed key to velocity
         const keyToVelocity = {
             [controlsConfig.moveLeft]: { x: -playerSpeed, y: 0 },
             [controlsConfig.moveRight]: { x: playerSpeed, y: 0 },
@@ -74,7 +82,9 @@ export function inputSystem(entities, inputMonad, configMonad) {
             [controlsConfig.moveDown]: { x: 0, y: playerSpeed }
         };
 
+        // get keys that are related to movement
         const activeMovementKeys = Array.from(activeKeys).filter(key => keyToVelocity[key] !== undefined);
+        // calculate the final velocity by adding up all velocities for each pressed movement key
         const velocity = activeMovementKeys.reduce((velocity, key) => {
             return {
                 x: velocity.x + keyToVelocity[key].x,
@@ -82,8 +92,10 @@ export function inputSystem(entities, inputMonad, configMonad) {
             };
         }, {x: 0, y: 0});
 
+        // if shoot button was pressed - make a shot request
         const shotRequested = activeKeys.has(controlsConfig.shoot);
 
+        // return entities; update player entity with all input influenced data
         return entities.map(entity =>
             entity.type === "player"
                 ? {
@@ -97,12 +109,13 @@ export function inputSystem(entities, inputMonad, configMonad) {
     });
 }
 
+// update physics state of all entities
 export function physicsSystem(entities) {
     return entities.map(entity => {
         if (hasComponents(entity, "position", "velocity")) {
             return {
                 ...entity,
-                position: {
+                position: { // apply velocity
                     x: entity.position.x + entity.velocity.x,
                     y: entity.position.y + entity.velocity.y,
                 }
@@ -113,11 +126,13 @@ export function physicsSystem(entities) {
     });
 }
 
+// process shot requests
 export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad) {
     const bulletsToAdd = [];
     const currentTime = timeMonad.getOrElse(0);
 
     const updatedEntities = entities.map(entity => {
+        // if entity is not a shooter or if shot is not requested - do not affect it
         if (!hasComponents(entity, "shooterStatus") ||
             !entity.shooterStatus.shotRequested) {
             return entity;
@@ -125,6 +140,7 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
 
         const shooterStatus = entity.shooterStatus;
         const isFirstShot = shooterStatus.lastShotTime === null;
+        // entity can shoot if that's its first shot or if shot cooldown has passed
         const canShoot = isFirstShot || currentTime - shooterStatus.lastShotTime >= shooterStatus.cooldownMs;
 
         if (canShoot) {
@@ -133,8 +149,8 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
                 configMonad.getPlayerConfig().shootDirection,
                 assetsMonad,
                 configMonad
-            ));
-            return {
+            )); // fulfill the request by creating a new bullet entity
+            return { // close the request and update cooldown
                 ...entity,
                 shooterStatus: {
                     ...entity.shooterStatus,
@@ -144,6 +160,7 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
             };
         }
 
+        // if entity requested a shot, but it was not possible at that moment, close the request
         return {
             ...entity,
             shooterStatus: {
@@ -153,34 +170,40 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
         };
     })
 
+    // return all updated entities along with new bullets
     return updatedEntities.concat(bulletsToAdd);
 }
 
+// clean off-screen bullets
 export function bulletCleaningSystem(entities, canvasMonad) {
     return entities.filter(entity => {
         if (entity.type !== "bullet") {
-            return true;
+            return true; // not a bullet - not affected
         }
 
         let canvas = canvasMonad.getOrElse(null);
         if (canvas === null) {
-            return true;
+            return true; // if canvas is messed up, what are we even cleaning? go fix that bug
         }
 
+        // if bullet is out of bounds of the canvas - delete it
+        // if it is in bounds - keep it
         return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
                entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
     })
 }
 
+// todo: should be reworked in a more general collision system
+// handle player collision with canvas borders
 export function playerCollisionSystem(entities, canvasMonad) {
     return entities.map(entity => {
         if (entity.type !== "player") {
-            return entity;
+            return entity; // not a player - not affected
         }
 
         let canvas = canvasMonad.getOrElse(null);
         if (canvas === null) {
-            return entity;
+            return entity; // if canvas is messed up, what are we even cleaning? go fix that bug
         }
 
         return {
@@ -189,10 +212,11 @@ export function playerCollisionSystem(entities, canvasMonad) {
                 x: clamp(entity.position.x, 0, canvas.width - entity.size.width),
                 y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
             },
-        };
+        }; // fit player position within canvas borders
     });
 }
 
+// very intelligent logging system that just spams all entities into console a couple of billions times per second
 export function logSystem(entities) {
     entities.forEach(entity => {
         console.log(entity);
