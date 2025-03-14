@@ -104,8 +104,8 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
             break;
     }
 
-    // noinspection JSSuspiciousNameCombination
     // size is messed up for vertical shooters, so we need to flip values appropriately
+    // noinspection JSSuspiciousNameCombination
     const size = (direction === "north" || direction === "south")
         ? Size(bulletSize.height, bulletSize.width)
         : Size(bulletSize.width, bulletSize.height);
