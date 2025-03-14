@@ -1,4 +1,4 @@
-import {CanvasMonad, ConfigMonad, InputMonad, TimeMonad} from "./monads.js";
+import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./monads.js";
 import { createPlayerEntity } from "./entities.js";
 import {
     bulletCleaningSystem,
@@ -16,6 +16,7 @@ const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas")); // e
 const assetsMonad = await preloadImages(...Object.values(configMonad.getAssetPaths())); // handle all game assets
 let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
+const randomMonad = new RandomMonad(); // handle random number generation
 
 // create all entities
 const entities = [

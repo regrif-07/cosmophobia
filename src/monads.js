@@ -1,3 +1,5 @@
+import {cyrb128, sfc32} from "./utility.js";
+
 // encapsulate our global config
 export class ConfigMonad {
     constructor(config = null) {
@@ -157,5 +159,101 @@ export class AssetsMonad {
 
     getOrElse(defaultValue) {
         return (this.assets !== null) ? this.assets : defaultValue;
+    }
+}
+
+// encapsulate random state; store results of computations inside state
+export class RandomMonad {
+    constructor(randomState = null) {
+        this.randomState = randomState === null ? RandomMonad.defaultRandomState() : randomState;
+    }
+
+    // default random state, seed = current date
+    static defaultRandomState() {
+        const seed = cyrb128(Date.now().toString());
+        return {
+            rng: sfc32(seed[0], seed[1], seed[2], seed[3]),
+            lastValue: null,
+        };
+    }
+
+    // random state with provided seed
+    static fromSeed(seedStr) {
+        const seed = cyrb128(seedStr);
+        const randomState = {
+            rng: sfc32(seed[0], seed[1], seed[2], seed[3]),
+            lastValue: null
+        };
+
+        return new RandomMonad(randomState);
+    }
+
+    map(func) {
+        return (this.randomState !== null) ? new RandomMonad(func(this.randomState)) : new RandomMonad(null);
+    }
+
+    chain(func) {
+        return (this.randomState !== null) ? func(this.randomState) : new RandomMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.randomState !== null) ? this.randomState : defaultValue;
+    }
+
+    // get last generated value
+    getValue() {
+        return this.randomState?.lastValue;
+    }
+
+    // generate next random value from 0 to 1
+    next() {
+        if (this.randomState === null) {
+            return new RandomMonad(null);
+        }
+
+        const newState = { ...this.randomState };
+        newState.lastValue = newState.rng();
+        return new RandomMonad(newState);
+    }
+
+    // generate a random integer in the range from min (inclusive) to max (inclusive)
+    nextInt(min, max) {
+        return this.next().map(state => {
+            return {
+                ...state,
+                lastValue: Math.floor(state.lastValue * (max - min + 1)) + min
+            };
+        });
+    }
+
+    // generate a random float in the range from min (inclusive) to max (exclusive)
+    nextFloat(min, max) {
+        return this.next().map(state => {
+            return {
+                ...state,
+                lastValue: state.lastValue * (max - min) + min,
+            };
+        });
+    }
+
+    // generate a random boolean with the given probability of being true
+    nextBool(probability = 0.5) {
+        return this.next().map(state => {
+            return {
+                ...state,
+                lastValue: state.lastValue < probability
+            };
+        });
+    }
+
+    // select random item from an array
+    nextItem(array) {
+        return this.next().map(state => {
+            const index = Math.floor(state.lastValue * array.length);
+            return {
+                ...state,
+                lastValue: array[index],
+            };
+        });
     }
 }
