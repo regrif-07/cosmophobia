@@ -1,4 +1,6 @@
 // fit a number in a range
+import {hasComponents} from "./components.js";
+
 export function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
 }
@@ -53,4 +55,20 @@ export function sfc32(a, b, c, d) {
         c = c + t | 0;
         return (t >>> 0) / 4294967296;
     }
+}
+
+// check if two entities are colliding; return true or false based on the check
+// if any entity will not have position or size component - return false
+export function areColliding(firstEntity, secondEntity) {
+    if (!hasComponents(firstEntity, "position", "size") ||
+        !hasComponents(secondEntity, "position", "size")) {
+        return false;
+    }
+
+    return (
+        firstEntity.position.x < secondEntity.position.x + secondEntity.size.width &&
+        firstEntity.position.x + firstEntity.size.width > secondEntity.position.x &&
+        firstEntity.position.y < secondEntity.position.y + secondEntity.size.height &&
+        firstEntity.position.y + firstEntity.size.height > secondEntity.position.y
+    );
 }

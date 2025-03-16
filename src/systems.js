@@ -1,7 +1,7 @@
 import {AssetsMonad, CanvasMonad, InputMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
 import {createBulletEntity, createEnemyEntity} from "./entities.js";
-import {clamp} from "./utility.js";
+import {areColliding, clamp} from "./utility.js";
 
 // compose system functions into one beefy function
 export function composeSystems(...systems) {
@@ -285,6 +285,31 @@ export function enemyCollisionSystem(entities, canvasMonad) {
             },
         };
     });
+}
+
+// check for collision between bullets and enemies and handle it appropriately
+export function bulletEnemyCollisionSystem(entities) {
+    const enemies = entities.filter(entity => entity.type === "enemy");
+    const bullets = entities.filter(entity => entity.type === "bullet");
+
+    const collidedEnemyIds = new Set();
+    const collidedBulletIds = new Set();
+
+    enemies.forEach(enemy => {
+        bullets.forEach(bullet => {
+            if (collidedBulletIds.has(bullet.id)) {
+                return;
+            }
+
+            if (areColliding(bullet, enemy)) {
+                collidedEnemyIds.add(enemy.id);
+                collidedBulletIds.add(bullet.id);
+            }
+        });
+    });
+
+    const entitiesToRemoveIds = collidedEnemyIds.union(collidedBulletIds);
+    return entities.filter(entity => !entitiesToRemoveIds.has(entity.id)); // remove bullets and enemies that collided
 }
 
 // display all entities grouped by type when log key is pressed
