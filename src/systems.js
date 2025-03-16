@@ -69,6 +69,15 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
             return new AssetsMonad(assets);
         });
 
+        const scoreTrackerEntity = entities.find(entity => entity.type === "scoreTracker");
+        ctx.font = "24px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "right";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 4;
+        ctx.fillText(`Score: ${scoreTrackerEntity.scoreTracker.currentScore}`, canvas.width - 20, 30);
+        ctx.shadowBlur = 0;
+
         return new CanvasMonad(canvas);
     });
 
