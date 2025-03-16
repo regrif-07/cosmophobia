@@ -2,7 +2,7 @@ import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./mo
 import { createPlayerEntity } from "./entities.js";
 import {
     bulletCleaningSystem,
-    composeSystems,
+    composeSystems, enemySpawnSystem,
     inputSystem, logSystem,
     physicsSystem, playerCollisionSystem,
     renderSystem,
@@ -47,6 +47,7 @@ const entities = [
 let systems = [
     (entities) => bulletCleaningSystem(entities, canvasMonad),
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
+    (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad, configMonad),

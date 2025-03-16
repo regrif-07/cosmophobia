@@ -1,6 +1,6 @@
 import {AssetsMonad, CanvasMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
-import {createBulletEntity} from "./entities.js";
+import {createBulletEntity, createEnemyEntity} from "./entities.js";
 import {clamp} from "./utility.js";
 
 // compose system functions into one beefy function
@@ -213,6 +213,28 @@ export function playerCollisionSystem(entities, canvasMonad) {
             },
         };
     });
+}
+
+// spawns enemies in waves
+export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad) {
+    const enemyEntitiesCount = entities.filter(entity => entity.type === "enemy").length;
+    if (enemyEntitiesCount !== 0) { // if there are no enemies - current wave is in action, don't spawn any enemies
+        return entities;
+    }
+
+    const enemySpawnConfig = configMonad.getEnemySpawnConfig();
+
+    const numberOfEnemiesToSpawn = randomMonad.nextInt(
+        enemySpawnConfig.minEnemiesPerWave,
+        enemySpawnConfig.maxEnemiesPerWave
+    ).getValue();
+
+    const enemiesToAdd = [];
+    for (let _ = 0; _ < numberOfEnemiesToSpawn; ++_) {
+        enemiesToAdd.push(createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomMonad));
+    }
+
+    return entities.concat(enemiesToAdd); // return entities with new enemies
 }
 
 // very intelligent logging system that just spams all entities into console a couple of billions times per second

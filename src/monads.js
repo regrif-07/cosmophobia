@@ -28,8 +28,12 @@ export class ConfigMonad {
                 simpleRenderingColor: "black",
             },
             enemy: {
-                horizontalSpeed: 3,
-                verticalSpeed: 3,
+                horizontalSpeed: -3,
+                verticalSpeedAbsolute: 3, // absolute speed, direction (sign) will change
+            },
+            enemySpawn: {
+                minEnemiesPerWave: 3,
+                maxEnemiesPerWave: 7,
             },
             assetPaths: {
                 background: "assets/background.png",
@@ -38,7 +42,7 @@ export class ConfigMonad {
                 enemy: "assets/enemy-ship.png"
             },
             debug: {
-                enableLogging: false,
+                enableLogging: true,
             },
         };
     }
@@ -71,6 +75,10 @@ export class ConfigMonad {
 
     getEnemyConfig() {
         return this.config?.enemy || ConfigMonad.defaultConfig().enemy;
+    }
+
+    getEnemySpawnConfig() {
+        return this.config?.enemySpawn || ConfigMonad.defaultConfig().enemySpawn;
     }
 
     getAssetPaths() {

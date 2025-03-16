@@ -48,11 +48,11 @@ export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomM
 
     const minXPosition = canvasWidth + size.width;
     // random horizontal position behind the right border of canvas
-    // (minimal offset = enemy width, maximum - 3 times width of an enemy)
+    // (minimal offset = enemy width, maximum = 2 times width of an enemy)
     // random vertical position in the range of whole canvas height
     const position = Position(
-        randomMonad.nextInt(minXPosition, minXPosition + size.width * 2).getValue(),
-        randomMonad.nextInt(canvasHeight, canvasHeight - size.height).getValue(),
+        randomMonad.nextInt(minXPosition, minXPosition + size.width).getValue(),
+        randomMonad.nextInt(0, canvasHeight - size.height).getValue(),
     );
 
     const enemyConfig = configMonad.getEnemyConfig();
@@ -60,7 +60,7 @@ export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomM
     // velocity with random vertical movement direction (up or down)
     const velocity = Velocity(
         enemyConfig.horizontalSpeed,
-        (randomMonad.nextBool() ? 1 : -1) * enemyConfig.verticalSpeed,
+        (randomMonad.nextBool().getValue() ? 1 : -1) * enemyConfig.verticalSpeedAbsolute,
     );
 
     return createEntity("enemy",
