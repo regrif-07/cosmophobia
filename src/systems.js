@@ -312,6 +312,30 @@ export function bulletEnemyCollisionSystem(entities) {
     return entities.filter(entity => !entitiesToRemoveIds.has(entity.id)); // remove bullets and enemies that collided
 }
 
+export function playerEnemyCollisionSystem(entities) {
+    const players = entities.filter(entity => entity.type === "player");
+    const enemies = entities.filter(entity => entity.type === "enemy");
+
+    const collidedPlayerIds = new Set();
+    const collidedEnemyIds = new Set();
+
+    players.forEach(player => {
+        enemies.forEach(enemy => {
+            if (collidedEnemyIds.has(enemy.id)) {
+                return;
+            }
+
+            if (areColliding(enemy, player)) {
+                collidedPlayerIds.add(player.id);
+                collidedEnemyIds.add(enemy.id);
+            }
+        });
+    });
+
+    const entitiesToRemoveIds = collidedPlayerIds.union(collidedEnemyIds);
+    return entities.filter(entity => !entitiesToRemoveIds.has(entity.id)); // remove players and enemies that collided
+}
+
 // display all entities grouped by type when log key is pressed
 export function logSystem(entities, inputMonad, configMonad) {
     inputMonad.chain(activeKeys => {

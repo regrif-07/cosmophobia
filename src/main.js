@@ -6,7 +6,7 @@ import {
     inputSystem, logSystem,
     physicsSystem, playerCollisionSystem,
     renderSystem,
-    shotRequestProcessingSystem, enemyCollisionSystem, bulletEnemyCollisionSystem
+    shotRequestProcessingSystem, enemyCollisionSystem, bulletEnemyCollisionSystem, playerEnemyCollisionSystem
 } from "./systems.js";
 import {preloadImages} from "./assets-management.js";
 
@@ -48,6 +48,7 @@ let systems = [
     (entities) => entityCleaningSystem(entities, canvasMonad),
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
     (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
+    playerEnemyCollisionSystem,
     bulletEnemyCollisionSystem,
     (entities) => enemyCollisionSystem(entities, canvasMonad, randomMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
