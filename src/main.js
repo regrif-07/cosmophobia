@@ -76,8 +76,42 @@ function gameLoop(initialEntities, applySystems) {
     const updatedEntities = applySystems(initialEntities); // apply all systems to entities
 
     if (!initialEntities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
+        displayResults();
         return;
     }
 
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems)); // continue wih next iteration
+}
+
+function displayResults() {
+    const canvas = canvasMonad.getOrElse(null);
+    if (canvas === null) {
+        return;
+    }
+
+    const gameResultsDiv = document.createElement("div");
+    gameResultsDiv.id = "gameResults";
+
+    const gameEndMessageP = document.createElement("p");
+    gameEndMessageP.innerText = "Game Over!";
+    gameEndMessageP.id = "gameEndMessage";
+
+    const contentContainer = document.createElement("div");
+    contentContainer.id = "gameResultsContentContainer";
+
+    const gameRestartButton = document.createElement("button");
+    gameRestartButton.id = "gameRestartButton";
+    gameRestartButton.textContent = "Play Again";
+    gameRestartButton.addEventListener("click", () => {
+        location.reload();
+    });
+
+    contentContainer.appendChild(gameEndMessageP);
+    contentContainer.appendChild(gameRestartButton);
+    gameResultsDiv.appendChild(contentContainer);
+
+    const gameAreaDiv = document.getElementById("gameArea");
+    gameAreaDiv.appendChild(gameResultsDiv);
+
+    canvas.style.display = "none";
 }

@@ -7,6 +7,45 @@ body {
     background: #01090F;
 }
 
+#gameArea {
+    width: 1200px;
+    height: 800px;
+}
+
 #gameCanvas {
     border: 3px solid #0E293E;
+}
+
+#gameResults {
+    width: inherit;
+    height: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameResultsContentContainer {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#gameEndMessage {
+    color: #F6D6BC;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+#gameRestartButton {
+    display: block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 24px;
+    background: red;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
