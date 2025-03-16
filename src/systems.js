@@ -297,7 +297,7 @@ export function enemyCollisionSystem(entities, canvasMonad) {
 }
 
 // check for collision between bullets and enemies and handle it appropriately
-export function bulletEnemyCollisionSystem(entities) {
+export function bulletEnemyCollisionSystem(entities, configMonad) {
     const enemies = entities.filter(entity => entity.type === "enemy");
     const bullets = entities.filter(entity => entity.type === "bullet");
 
@@ -317,8 +317,25 @@ export function bulletEnemyCollisionSystem(entities) {
         });
     });
 
+    const enemiesDestroyed = collidedEnemyIds.size;
+    const updatedEntities = (enemiesDestroyed === 0) ? entities : entities.map(entity => {
+        if (entity.type !== "scoreTracker") {
+            return entity;
+        }
+
+        const pointsPerEnemy = configMonad.getSection("scoreTracker").pointsPerEnemy;
+        return {
+            ...entity,
+            scoreTracker: {
+                ...entity.scoreTracker,
+                currentScore: entity.scoreTracker.currentScore + enemiesDestroyed * pointsPerEnemy,
+            },
+        };
+    });
+
     const entitiesToRemoveIds = collidedEnemyIds.union(collidedBulletIds);
-    return entities.filter(entity => !entitiesToRemoveIds.has(entity.id)); // remove bullets and enemies that collided
+    // remove collided bullets and enemies
+    return updatedEntities.filter(entity => !entitiesToRemoveIds.has(entity.id));
 }
 
 export function playerEnemyCollisionSystem(entities) {

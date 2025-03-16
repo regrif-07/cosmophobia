@@ -56,6 +56,9 @@ export class ConfigMonad {
                     height: 58,
                 },
             },
+            scoreTracker: {
+                pointsPerEnemy: 100,
+            },
             debug: {
                 enableLogging: false,
             },

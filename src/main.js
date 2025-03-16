@@ -58,7 +58,7 @@ let systems = [
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
     (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
     playerEnemyCollisionSystem,
-    bulletEnemyCollisionSystem,
+    (entities) => bulletEnemyCollisionSystem(entities, configMonad),
     (entities) => enemyCollisionSystem(entities, canvasMonad, randomMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
