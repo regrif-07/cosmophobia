@@ -18,28 +18,7 @@ let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
 const randomMonad = new RandomMonad(); // handle random based functionality
 
-// create all entities
-const entities = [
-    createPlayerEntity(canvasMonad, assetsMonad, configMonad),
-]
-
-// list of all systems to compose
-let systems = [
-    (entities) => bulletCleaningSystem(entities, canvasMonad),
-    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
-    (entities) => playerCollisionSystem(entities, canvasMonad),
-    physicsSystem,
-    (entities) => inputSystem(entities, inputMonad, configMonad),
-    (entities) => renderSystem(entities, canvasMonad, assetsMonad, configMonad),
-]
-
-// if logging is enabled, insert loggingSystem in the first position
-if (configMonad.getDebug().enableLogging) {
-    systems = [logSystem, ...systems];
-}
-
-// compose all systems
-const applySystems = composeSystems(...systems);
+// input configuration based on events
 
 // add newly pressed key to inputMonad
 window.addEventListener("keydown", event => {
@@ -58,6 +37,27 @@ window.addEventListener("keyup", event => {
         return updatedKeys;
     });
 });
+
+// create all entities
+const entities = [
+    createPlayerEntity(canvasMonad, assetsMonad, configMonad),
+]
+
+// list of all systems to compose
+let systems = [
+    (entities) => bulletCleaningSystem(entities, canvasMonad),
+    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
+    (entities) => playerCollisionSystem(entities, canvasMonad),
+    physicsSystem,
+    (entities) => inputSystem(entities, inputMonad, configMonad),
+    (entities) => renderSystem(entities, canvasMonad, assetsMonad, configMonad),
+]
+
+// if logging is enabled, insert loggingSystem in the first position
+systems = configMonad.getDebug().enableLogging ? [logSystem, ...systems] : systems;
+
+// compose all systems
+const applySystems = composeSystems(...systems);
 
 // main game loop call
 gameLoop(entities, applySystems);

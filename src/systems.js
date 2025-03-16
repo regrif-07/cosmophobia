@@ -176,43 +176,43 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
 
 // clean off-screen bullets
 export function bulletCleaningSystem(entities, canvasMonad) {
+    let canvas = canvasMonad.getOrElse(null);
+    if (canvas === null) {
+        return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
+    }
+
     return entities.filter(entity => {
         if (entity.type !== "bullet") {
             return true; // not a bullet - not affected
         }
 
-        let canvas = canvasMonad.getOrElse(null);
-        if (canvas === null) {
-            return true; // if canvas is messed up, what are we even cleaning? go fix that bug
-        }
-
         // if bullet is out of bounds of the canvas - delete it
         // if it is in bounds - keep it
         return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
-               entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
+            entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
     })
 }
 
 // todo: should be reworked in a more general collision system
 // handle player collision with canvas borders
 export function playerCollisionSystem(entities, canvasMonad) {
+    let canvas = canvasMonad.getOrElse(null);
+    if (canvas === null) {
+        return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
+    }
+
     return entities.map(entity => {
         if (entity.type !== "player") {
             return entity; // not a player - not affected
         }
 
-        let canvas = canvasMonad.getOrElse(null);
-        if (canvas === null) {
-            return entity; // if canvas is messed up, what are we even cleaning? go fix that bug
-        }
-
         return {
             ...entity,
-            position: {
+            position: { // fit player position within canvas borders
                 x: clamp(entity.position.x, 0, canvas.width - entity.size.width),
                 y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
             },
-        }; // fit player position within canvas borders
+        };
     });
 }
 
