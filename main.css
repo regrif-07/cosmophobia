@@ -39,12 +39,23 @@ body {
     font-weight: bold;
 }
 
+#scoreContainer {
+    color: #F6D6BC;
+    font-size: 24px;
+}
+
+#newBestScoreMessage {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
 #gameRestartButton {
     display: block;
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 24px;
-    background: red;
+    background: #F6D6BC;
+    color: #0E293E;
     border: none;
     border-radius: 5px;
     cursor: pointer;

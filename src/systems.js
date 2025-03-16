@@ -317,18 +317,21 @@ export function bulletEnemyCollisionSystem(entities, configMonad) {
         });
     });
 
-    const enemiesDestroyed = collidedEnemyIds.size;
-    const updatedEntities = (enemiesDestroyed === 0) ? entities : entities.map(entity => {
+    const enemiesDestroyedCount = collidedEnemyIds.size;
+    const updatedEntities = (enemiesDestroyedCount === 0) ? entities : entities.map(entity => {
         if (entity.type !== "scoreTracker") {
             return entity;
         }
 
         const pointsPerEnemy = configMonad.getSection("scoreTracker").pointsPerEnemy;
+        const newScore = entity.scoreTracker.currentScore + (enemiesDestroyedCount * pointsPerEnemy);
+
         return {
             ...entity,
             scoreTracker: {
                 ...entity.scoreTracker,
-                currentScore: entity.scoreTracker.currentScore + enemiesDestroyed * pointsPerEnemy,
+                currentScore: newScore,
+                bestScore: Math.max(newScore, entity.scoreTracker.bestScore),
             },
         };
     });

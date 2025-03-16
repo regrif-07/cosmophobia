@@ -79,22 +79,31 @@ gameLoop(initialEntities, applySystems);
 
 // main game loop function
 // to maintain immutability entities are not modified in place (passed as argument to next iteration)
-function gameLoop(initialEntities, applySystems) {
+function gameLoop(entities, applySystems) {
     timeMonad = TimeMonad.now(); // update timeMonad with currentTime
-    const updatedEntities = applySystems(initialEntities); // apply all systems to entities
+    const updatedEntities = applySystems(entities); // apply all systems to entities
 
-    if (!initialEntities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
-        displayResults();
+    if (!entities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
+        onGameEnded(entities);
         return;
     }
 
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems)); // continue wih next iteration
 }
 
-function displayResults() {
+function onGameEnded(finalEntities) {
     const canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return;
+    }
+
+    const scoreEntity = finalEntities.find(entity => entity.type === "scoreTracker");
+    const currentScore = scoreEntity?.scoreTracker?.currentScore || 0;
+    const bestScore = scoreEntity?.scoreTracker?.bestScore || 0;
+
+    const bestScoreUpdated = parseInt(localStorage.getItem('cosmophobiaBestScore'), 10) !== bestScore;
+    if (bestScoreUpdated) {
+        localStorage.setItem('cosmophobiaBestScore', bestScore.toString());
     }
 
     const gameResultsDiv = document.createElement("div");
@@ -107,6 +116,28 @@ function displayResults() {
     const contentContainer = document.createElement("div");
     contentContainer.id = "gameResultsContentContainer";
 
+    const scoreContainer = document.createElement("div");
+    scoreContainer.id = "scoreContainer";
+
+    const currentScoreP = document.createElement("p");
+    currentScoreP.id = "currentScore";
+    currentScoreP.innerText = `Your Score: ${currentScore}`;
+
+    const bestScoreP = document.createElement("p");
+    bestScoreP.id = "bestScore";
+    bestScoreP.innerText = `Best Score: ${bestScore}`;
+
+    scoreContainer.appendChild(currentScoreP);
+    scoreContainer.appendChild(bestScoreP);
+
+    if (bestScoreUpdated) {
+        const bestScoreUpdatedMessageP = document.createElement("p");
+        bestScoreUpdatedMessageP.id = "bestScoreUpdatedMessage";
+        bestScoreUpdatedMessageP.innerText = "NEW BEST SCORE";
+
+        scoreContainer.appendChild(bestScoreUpdatedMessageP);
+    }
+
     const gameRestartButton = document.createElement("button");
     gameRestartButton.id = "gameRestartButton";
     gameRestartButton.textContent = "Play Again";
@@ -115,6 +146,7 @@ function displayResults() {
     });
 
     contentContainer.appendChild(gameEndMessageP);
+    contentContainer.appendChild(scoreContainer);
     contentContainer.appendChild(gameRestartButton);
     gameResultsDiv.appendChild(contentContainer);
 
