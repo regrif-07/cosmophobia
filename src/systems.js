@@ -242,6 +242,36 @@ export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad
     return entities.concat(enemiesToAdd); // return entities with new enemies
 }
 
+// handle enemy collision with canvas top and bottom borders; switch direction of vertical movement on collision
+export function enemyCollisionSystem(entities, canvasMonad) {
+    let canvas = canvasMonad.getOrElse(null);
+    if (canvas === null) {
+        return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
+    }
+
+    return entities.map(entity => {
+        if (entity.type !== "enemy") {
+            return entity; // not an enemy - not affected
+        }
+
+        if (entity.position.y > 0 && entity.position.y < canvas.height - entity.size.height) {
+            return entity; // if there is no collision - don't update enemy
+        }
+
+        return {
+            ...entity,
+            position: { // fit enemy position within canvas top and bottom borders
+                ...entity.position,
+                y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
+            },
+            velocity: { // flip the direction of vertical movement
+                ...entity.velocity,
+                y: -1 * entity.velocity.y,
+            },
+        };
+    });
+}
+
 // very intelligent logging system that just spams all entities into console a couple of billions times per second
 export function logSystem(entities) {
     entities.forEach(entity => {

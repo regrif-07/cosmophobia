@@ -42,7 +42,7 @@ export class ConfigMonad {
                 enemy: "assets/enemy-ship.png"
             },
             debug: {
-                enableLogging: true,
+                enableLogging: false,
             },
         };
     }
