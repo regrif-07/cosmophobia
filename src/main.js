@@ -1,5 +1,5 @@
 import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./monads.js";
-import { createPlayerEntity } from "./entities.js";
+import {createPlayerEntity, createScoreTrackerEntity} from "./entities.js";
 import {
     entityCleaningSystem,
     composeSystems, enemySpawnSystem,
@@ -42,7 +42,15 @@ const playerEntity = createPlayerEntity(canvasMonad, assetsMonad, configMonad);
 const playerEntityId = playerEntity.id; // hold the id of the player to check if the game has ended or not
 
 // initial entities
-const initialEntities = [playerEntity]
+const initialEntities = [
+    playerEntity,
+    createScoreTrackerEntity(
+        0,
+        localStorage.getItem('cosmophobiaBestScore')
+            ? parseInt(localStorage.getItem('cosmophobiaBestScore'), 10)
+            : 0
+    ),
+];
 
 // list of all systems to compose
 let systems = [

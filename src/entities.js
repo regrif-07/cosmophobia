@@ -159,3 +159,12 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
         SimplyRendered(bulletConfig.simpleRenderingColor),
     );
 }
+
+export function createScoreTrackerEntity(currentScore, bestScore) {
+    return createEntity("scoreTracker", {
+        scoreTracker: {
+            currentScore: currentScore,
+            bestScore: bestScore,
+        },
+    });
+}
