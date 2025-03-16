@@ -193,7 +193,6 @@ export function bulletCleaningSystem(entities, canvasMonad) {
     })
 }
 
-// todo: should be reworked in a more general collision system
 // handle player collision with canvas borders
 export function playerCollisionSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);

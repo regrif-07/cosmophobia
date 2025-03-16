@@ -27,10 +27,15 @@ export class ConfigMonad {
                 speed: 10,
                 simpleRenderingColor: "black",
             },
+            enemy: {
+                horizontalSpeed: 3,
+                verticalSpeed: 3,
+            },
             assetPaths: {
                 background: "assets/background.png",
                 playerShip: "assets/player-ship.png",
                 bullet: "assets/bullet.png",
+                enemy: "assets/enemy-ship.png"
             },
             debug: {
                 enableLogging: false,
@@ -62,6 +67,10 @@ export class ConfigMonad {
 
     getBulletConfig() {
         return this.config?.bullet || ConfigMonad.defaultConfig().bullet
+    }
+
+    getEnemyConfig() {
+        return this.config?.enemy || ConfigMonad.defaultConfig().enemy;
     }
 
     getAssetPaths() {
