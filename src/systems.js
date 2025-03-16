@@ -1,6 +1,6 @@
 import {AssetsMonad, CanvasMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
-import {createBulletEntity} from "./entities.js";
+import {createBulletEntity, createEnemyEntity} from "./entities.js";
 import {clamp} from "./utility.js";
 
 // compose system functions into one beefy function
@@ -174,26 +174,30 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
     return updatedEntities.concat(bulletsToAdd);
 }
 
-// clean off-screen bullets
-export function bulletCleaningSystem(entities, canvasMonad) {
+// clean off-screen entities (bullets, enemies)
+export function entityCleaningSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
     }
 
     return entities.filter(entity => {
-        if (entity.type !== "bullet") {
-            return true; // not a bullet - not affected
-        }
+        switch (entity.type) {
+            case "bullet":
+                // delete a bullet if it is out of bounds of the canvas
+                return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
+                    entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
 
-        // if bullet is out of bounds of the canvas - delete it
-        // if it is in bounds - keep it
-        return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
-            entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
+            case "enemy":
+                // delete enemy if it is out of the left bound of the canvas
+                return entity.position.x >= -entity.size.width;
+
+            default:
+                return true; // other entity types are not affected
+        }
     })
 }
 
-// todo: should be reworked in a more general collision system
 // handle player collision with canvas borders
 export function playerCollisionSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);
@@ -211,6 +215,58 @@ export function playerCollisionSystem(entities, canvasMonad) {
             position: { // fit player position within canvas borders
                 x: clamp(entity.position.x, 0, canvas.width - entity.size.width),
                 y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
+            },
+        };
+    });
+}
+
+// spawns enemies in waves
+export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad) {
+    const enemyEntitiesCount = entities.filter(entity => entity.type === "enemy").length;
+    if (enemyEntitiesCount !== 0) { // if there are no enemies - current wave is in action, don't spawn any enemies
+        return entities;
+    }
+
+    const enemySpawnConfig = configMonad.getEnemySpawnConfig();
+
+    const numberOfEnemiesToSpawn = randomMonad.nextInt(
+        enemySpawnConfig.minEnemiesPerWave,
+        enemySpawnConfig.maxEnemiesPerWave
+    ).getValue();
+
+    const enemiesToAdd = [];
+    for (let _ = 0; _ < numberOfEnemiesToSpawn; ++_) {
+        enemiesToAdd.push(createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomMonad));
+    }
+
+    return entities.concat(enemiesToAdd); // return entities with new enemies
+}
+
+// handle enemy collision with canvas top and bottom borders; switch direction of vertical movement on collision
+export function enemyCollisionSystem(entities, canvasMonad) {
+    let canvas = canvasMonad.getOrElse(null);
+    if (canvas === null) {
+        return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
+    }
+
+    return entities.map(entity => {
+        if (entity.type !== "enemy") {
+            return entity; // not an enemy - not affected
+        }
+
+        if (entity.position.y > 0 && entity.position.y < canvas.height - entity.size.height) {
+            return entity; // if there is no collision - don't update enemy
+        }
+
+        return {
+            ...entity,
+            position: { // fit enemy position within canvas top and bottom borders
+                ...entity.position,
+                y: clamp(entity.position.y, 0, canvas.height - entity.size.height),
+            },
+            velocity: { // flip the direction of vertical movement
+                ...entity.velocity,
+                y: -1 * entity.velocity.y,
             },
         };
     });

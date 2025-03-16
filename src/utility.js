@@ -7,7 +7,7 @@ export function clamp(number, min, max) {
 export function getAssetImageSize(assetsMonad, imageUrl) {
     return assetsMonad.chain(assets => {
         const image = assets[imageUrl];
-        return {
+        return { // this is NOT a Size component; conversation required
             width: image.width,
             height: image.height,
         };

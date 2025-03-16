@@ -1,12 +1,12 @@
 import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./monads.js";
 import { createPlayerEntity } from "./entities.js";
 import {
-    bulletCleaningSystem,
-    composeSystems,
+    entityCleaningSystem,
+    composeSystems, enemySpawnSystem,
     inputSystem, logSystem,
     physicsSystem, playerCollisionSystem,
     renderSystem,
-    shotRequestProcessingSystem
+    shotRequestProcessingSystem, enemyCollisionSystem
 } from "./systems.js";
 import {preloadImages} from "./assets-management.js";
 
@@ -45,8 +45,10 @@ const entities = [
 
 // list of all systems to compose
 let systems = [
-    (entities) => bulletCleaningSystem(entities, canvasMonad),
+    (entities) => entityCleaningSystem(entities, canvasMonad),
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
+    (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
+    (entities) => enemyCollisionSystem(entities, canvasMonad, randomMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
     (entities) => inputSystem(entities, inputMonad, configMonad),

@@ -34,6 +34,44 @@ export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
     );
 }
 
+// creates an enemy entity
+// - at random position behind right canvas border
+// - with random vertical velocity direction (moves up or down)
+export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomMonad) {
+    const enemyImagePath = configMonad.getAssetPaths().enemy;
+
+    const size = getAssetImageSize(assetsMonad, enemyImagePath);
+
+    const canvas = canvasMonad.getOrElse(null);
+    const canvasWidth = canvas?.width || 0;
+    const canvasHeight = canvas?.height || 0;
+
+    const minXPosition = canvasWidth + size.width;
+    // random horizontal position behind the right border of canvas
+    // (minimal offset = enemy width, maximum = 2 times width of an enemy)
+    // random vertical position in the range of whole canvas height
+    const position = Position(
+        randomMonad.nextInt(minXPosition, minXPosition + size.width).getValue(),
+        randomMonad.nextInt(0, canvasHeight - size.height).getValue(),
+    );
+
+    const enemyConfig = configMonad.getEnemyConfig();
+
+    // velocity with random vertical movement direction (up or down)
+    const velocity = Velocity(
+        enemyConfig.horizontalSpeed,
+        (randomMonad.nextBool().getValue() ? 1 : -1) * enemyConfig.verticalSpeedAbsolute,
+    );
+
+    return createEntity("enemy",
+        position,
+        velocity,
+        Size(size.width, size.height),
+        ImageRendered(enemyImagePath),
+        SimplyRendered("red"),
+    );
+}
+
 // create a bullet entity
 // provide shootingEntity, which is, as you might have guessed, an entity that shot that bullet
 // provide direction ("north", "south", "west" or "east")
