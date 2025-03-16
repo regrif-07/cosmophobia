@@ -1,4 +1,4 @@
-import {AssetsMonad, CanvasMonad} from "./monads.js";
+import {AssetsMonad, CanvasMonad, InputMonad} from "./monads.js";
 import {hasComponents} from "./components.js";
 import {createBulletEntity, createEnemyEntity} from "./entities.js";
 import {clamp} from "./utility.js";
@@ -287,10 +287,25 @@ export function enemyCollisionSystem(entities, canvasMonad) {
     });
 }
 
-// very intelligent logging system that just spams all entities into console a couple of billions times per second
-export function logSystem(entities) {
-    entities.forEach(entity => {
-        console.log(entity);
+// display all entities grouped by type when log key is pressed
+export function logSystem(entities, inputMonad, configMonad) {
+    inputMonad.chain(activeKeys => {
+        if (activeKeys.has(configMonad.getSection("controls").log)) {
+            const entitiesGroupedByType = entities.reduce((typeGroups, entity) => {
+                const type = entity.type;
+                if (!typeGroups[type]) {
+                    typeGroups[type] = [];
+                }
+
+                typeGroups[type].push(entity);
+
+                return typeGroups;
+            }, {});
+
+            console.log(entitiesGroupedByType);
+        }
+
+        return new InputMonad(activeKeys);
     })
 
     return entities;

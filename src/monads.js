@@ -22,6 +22,7 @@ export class ConfigMonad {
                 moveUp: "ArrowUp",
                 moveDown: "ArrowDown",
                 shoot: " ",
+                log: "\\",
             },
             bullet: {
                 speed: 10,

@@ -56,7 +56,9 @@ let systems = [
 ]
 
 // if logging is enabled, insert loggingSystem in the first position
-systems = configMonad.getSection("debug").enableLogging ? [logSystem, ...systems] : systems;
+systems = configMonad.getSection("debug").enableLogging
+    ? [(entities) => logSystem(entities, inputMonad, configMonad), ...systems]
+    : systems;
 
 // compose all systems
 const applySystems = composeSystems(...systems);
