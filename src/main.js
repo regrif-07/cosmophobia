@@ -38,10 +38,11 @@ window.addEventListener("keyup", event => {
     });
 });
 
-// create all entities
-const entities = [
-    createPlayerEntity(canvasMonad, assetsMonad, configMonad),
-]
+const playerEntity = createPlayerEntity(canvasMonad, assetsMonad, configMonad);
+const playerEntityId = playerEntity.id; // hold the id of the player to check if the game has ended or not
+
+// initial entities
+const initialEntities = [playerEntity]
 
 // list of all systems to compose
 let systems = [
@@ -66,12 +67,17 @@ systems = configMonad.getSection("debug").enableLogging
 const applySystems = composeSystems(...systems);
 
 // main game loop call
-gameLoop(entities, applySystems);
+gameLoop(initialEntities, applySystems);
 
 // main game loop function
 // to maintain immutability entities are not modified in place (passed as argument to next iteration)
 function gameLoop(initialEntities, applySystems) {
     timeMonad = TimeMonad.now(); // update timeMonad with currentTime
     const updatedEntities = applySystems(initialEntities); // apply all systems to entities
+
+    if (!initialEntities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
+        return;
+    }
+
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems)); // continue wih next iteration
 }
