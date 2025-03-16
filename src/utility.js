@@ -4,9 +4,14 @@ export function clamp(number, min, max) {
 }
 
 // look for an image asset inside the assetsMonad and return its size
+// if asset was not found - return null
 export function getAssetImageSize(assetsMonad, imageUrl) {
     return assetsMonad.chain(assets => {
         const image = assets[imageUrl];
+        if (!image)  {
+            return null;
+        }
+
         return { // this is NOT a Size component; conversation required
             width: image.width,
             height: image.height,

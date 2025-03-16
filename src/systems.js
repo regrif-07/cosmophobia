@@ -15,22 +15,31 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // clear canvas to construct new frame from scratch
 
         assetsMonad.chain(assets => {
-            ctx.drawImage(
-                assets[configMonad.getConfigSection("assetPaths").background],
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            ); // draw the background
+            const backgroundImage = assets[configMonad.getSection("assetPaths").background];
+            if (backgroundImage) {
+                ctx.drawImage(
+                    backgroundImage,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                ); // draw the background image
+            }
+            else { // fallback plain color background
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
 
             entities
                 // cannot handle entities without position and size
                 .filter(entity => hasComponents(entity, "position", "size"))
                 .forEach(entity => {
-                    if (hasComponents(entity, "imageRendered")) {
-                        // render as image
+                    const hasImageRenderedComponent = hasComponents(entity, "imageRendered");
+                    let imageRenderingFailed = false;
+                    if (hasImageRenderedComponent) {
                         const image = assets[entity.imageRendered.imageUrl];
                         if (image) {
+                            // render as image
                             ctx.drawImage(
                                 image,
                                 entity.position.x,
@@ -39,8 +48,14 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
                                 entity.size.height
                             );
                         }
-                    } else if (hasComponents(entity, "simplyRendered")) {
-                        // simplified render (not working due to entity size being based on image size)
+                        else {
+                            imageRenderingFailed = true;
+                        }
+                    }
+
+                    // fallback simple geometry renderer
+                    if (hasComponents(entity, "simplyRendered") &&
+                        (!hasImageRenderedComponent || imageRenderingFailed)) {
                         ctx.fillStyle = entity.simplyRendered.color;
                         ctx.fillRect(
                             entity.position.x,
@@ -71,8 +86,8 @@ export function inputSystem(entities, inputMonad, configMonad) {
                     : entity);
         }
 
-        const controlsConfig = configMonad.getConfigSection("controls");
-        const playerSpeed = configMonad.getConfigSection("player").speed;
+        const controlsConfig = configMonad.getSection("controls");
+        const playerSpeed = configMonad.getSection("player").speed;
 
         // maps pressed key to velocity
         const keyToVelocity = {
@@ -146,7 +161,7 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
         if (canShoot) {
             bulletsToAdd.push(createBulletEntity(
                 entity,
-                configMonad.getConfigSection("player").shootDirection,
+                configMonad.getSection("player").shootDirection,
                 assetsMonad,
                 configMonad
             )); // fulfill the request by creating a new bullet entity
@@ -227,7 +242,7 @@ export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad
         return entities;
     }
 
-    const enemySpawnConfig = configMonad.getConfigSection("enemySpawn");
+    const enemySpawnConfig = configMonad.getSection("enemySpawn");
 
     const numberOfEnemiesToSpawn = randomMonad.nextInt(
         enemySpawnConfig.minEnemiesPerWave,

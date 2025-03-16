@@ -19,10 +19,11 @@ export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
     const canvas = canvasMonad.getOrElse(null);
     const playerPositionY = canvas ? canvas.height / 2 : 0; // center player ship vertically on the canvas
 
-    const playerImagePath = configMonad.getConfigSection("assetPaths").playerShip;
-    const size = getAssetImageSize(assetsMonad, playerImagePath); // base player size on the size of its image
+    const playerImagePath = configMonad.getSection("assetPaths").playerShip;
+    const size = getAssetImageSize(assetsMonad, playerImagePath) ||
+                 configMonad.getSection("defaultSizes").player;
 
-    const playerConfig = configMonad.getConfigSection("player");
+    const playerConfig = configMonad.getSection("player");
     return createEntity("player",
         // player position is vertically centered, with some horizontal offset
         Position(playerConfig.startPositionXOffset, playerPositionY),
@@ -38,9 +39,10 @@ export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
 // - at random position behind right canvas border
 // - with random vertical velocity direction (moves up or down)
 export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomMonad) {
-    const enemyImagePath = configMonad.getConfigSection("assetPaths").enemy;
+    const enemyImagePath = configMonad.getSection("assetPaths").enemy;
 
-    const size = getAssetImageSize(assetsMonad, enemyImagePath);
+    const size = getAssetImageSize(assetsMonad, enemyImagePath) ||
+                 configMonad.getSection("defaultSizes").enemy;
 
     const canvas = canvasMonad.getOrElse(null);
     const canvasWidth = canvas?.width || 0;
@@ -55,7 +57,7 @@ export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomM
         randomMonad.nextInt(0, canvasHeight - size.height).getValue(),
     );
 
-    const enemyConfig = configMonad.getConfigSection("enemy");
+    const enemyConfig = configMonad.getSection("enemy");
 
     // velocity with random vertical movement direction (up or down)
     const velocity = Velocity(
@@ -84,11 +86,12 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
     }
 
     // bullet size is based on bullet image size
-    const bulletImagePath = configMonad.getConfigSection("assetPaths").bullet;
+    const bulletImagePath = configMonad.getSection("assetPaths").bullet;
     // bullet size is kinda messed up, because we can have vertical and horizontal shooters
-    // bullet image is horizontal - so this size is horizontal too
+    // bullet image is horizontal (and default size is horizontal too) - so this size is horizontal too
     // in order to use it with vertical bullet we should flip width with height
-    const bulletSize = getAssetImageSize(assetsMonad, bulletImagePath);
+    const bulletSize = getAssetImageSize(assetsMonad, bulletImagePath) ||
+                       configMonad.getSection("defaultSizes").bullet;
 
     // calculate horizontal and vertical middle positions relative to shooting entity
     // (entities are shooting from the middle of shooting side)
@@ -99,7 +102,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
         shootingEntity.size.height / 2 -
         bulletSize.height / 2;
 
-    const bulletConfig = configMonad.getConfigSection("bullet");
+    const bulletConfig = configMonad.getSection("bullet");
 
     let position = Position(0, 0);
     let velocity = Velocity(0, 0);

@@ -41,6 +41,20 @@ export class ConfigMonad {
                 bullet: "assets/bullet.png",
                 enemy: "assets/enemy-ship.png"
             },
+            defaultSizes: { // default sizes that will be used in case of a sprite loading failure
+                player: {
+                    width: 68,
+                    height: 62,
+                },
+                bullet: {
+                    width: 35,
+                    height: 18,
+                },
+                enemy: {
+                    width: 55,
+                    height: 58,
+                },
+            },
             debug: {
                 enableLogging: false,
             },
@@ -59,7 +73,7 @@ export class ConfigMonad {
         return (this.config !== null) ? this.config : defaultValue;
     }
 
-    getConfigSection(sectionName) {
+    getSection(sectionName) {
         if (!sectionName || typeof sectionName !== 'string') {
             return null;
         }

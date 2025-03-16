@@ -13,7 +13,7 @@ import {preloadImages} from "./assets-management.js";
 // monads
 const configMonad = new ConfigMonad(); // handle shared configuration
 const canvasMonad = new CanvasMonad(document.getElementById("gameCanvas")); // encapsulate canvas
-const assetsMonad = await preloadImages(...Object.values(configMonad.getConfigSection("assetPaths"))); // handle all game assets
+const assetsMonad = await preloadImages(...Object.values(configMonad.getSection("assetPaths"))); // handle all game assets
 let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
 const randomMonad = new RandomMonad(); // handle random based functionality
@@ -56,7 +56,7 @@ let systems = [
 ]
 
 // if logging is enabled, insert loggingSystem in the first position
-systems = configMonad.getConfigSection("debug").enableLogging ? [logSystem, ...systems] : systems;
+systems = configMonad.getSection("debug").enableLogging ? [logSystem, ...systems] : systems;
 
 // compose all systems
 const applySystems = composeSystems(...systems);

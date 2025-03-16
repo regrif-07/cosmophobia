@@ -23,7 +23,7 @@ export function Velocity(x, y) {
     };
 }
 
-// provide size information (will be used by rendering system, collision system and many other systems)
+// provide size information
 export function Size(width, height) {
     return {
         size: {
@@ -33,11 +33,7 @@ export function Size(width, height) {
     };
 }
 
-// obsolete
 // provides information for simplified rendering
-// was used on first steps of development
-// after migration to image assets system was supposed to be used as fallback rendering option
-// yet, because I am lazy and entity size is based on its image size, this fallback option will never show itself
 export function SimplyRendered(color) {
     return {
         simplyRendered: {
