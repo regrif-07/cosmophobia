@@ -174,22 +174,27 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
     return updatedEntities.concat(bulletsToAdd);
 }
 
-// clean off-screen bullets
-export function bulletCleaningSystem(entities, canvasMonad) {
+// clean off-screen entities (bullets, enemies)
+export function entityCleaningSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
     }
 
     return entities.filter(entity => {
-        if (entity.type !== "bullet") {
-            return true; // not a bullet - not affected
-        }
+        switch (entity.type) {
+            case "bullet":
+                // delete a bullet if it is out of bounds of the canvas
+                return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
+                    entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
 
-        // if bullet is out of bounds of the canvas - delete it
-        // if it is in bounds - keep it
-        return entity.position.x >= -entity.size.width && entity.position.x <= canvas.width &&
-            entity.position.y >= -entity.size.height && entity.position.y <= canvas.height;
+            case "enemy":
+                // delete enemy if it is out of the left bound of the canvas
+                return entity.position.x >= -entity.size.width;
+
+            default:
+                return true; // other entity types are not affected
+        }
     })
 }
 
