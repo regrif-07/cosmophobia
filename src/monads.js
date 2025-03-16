@@ -59,34 +59,12 @@ export class ConfigMonad {
         return (this.config !== null) ? this.config : defaultValue;
     }
 
-    // helper functions that will return whatever section of config you would like
+    getConfigSection(sectionName) {
+        if (!sectionName || typeof sectionName !== 'string') {
+            return null;
+        }
 
-    getPlayerConfig() {
-        return this.config?.player || ConfigMonad.defaultConfig().player;
-    }
-
-    getControlsConfig() {
-        return this.config?.controls || ConfigMonad.defaultConfig().controls;
-    }
-
-    getBulletConfig() {
-        return this.config?.bullet || ConfigMonad.defaultConfig().bullet
-    }
-
-    getEnemyConfig() {
-        return this.config?.enemy || ConfigMonad.defaultConfig().enemy;
-    }
-
-    getEnemySpawnConfig() {
-        return this.config?.enemySpawn || ConfigMonad.defaultConfig().enemySpawn;
-    }
-
-    getAssetPaths() {
-        return this.config?.assetPaths || ConfigMonad.defaultConfig().assetPaths;
-    }
-
-    getDebug() {
-        return this.config?.debug || ConfigMonad.defaultConfig().debug;
+        return this.config?.[sectionName] || ConfigMonad.defaultConfig()[sectionName];
     }
 }
 

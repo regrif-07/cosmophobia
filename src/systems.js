@@ -16,7 +16,7 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
 
         assetsMonad.chain(assets => {
             ctx.drawImage(
-                assets[configMonad.getAssetPaths().background],
+                assets[configMonad.getConfigSection("assetPaths").background],
                 0,
                 0,
                 canvas.width,
@@ -71,8 +71,8 @@ export function inputSystem(entities, inputMonad, configMonad) {
                     : entity);
         }
 
-        const controlsConfig = configMonad.getControlsConfig();
-        const playerSpeed = configMonad.getPlayerConfig().speed;
+        const controlsConfig = configMonad.getConfigSection("controls");
+        const playerSpeed = configMonad.getConfigSection("player").speed;
 
         // maps pressed key to velocity
         const keyToVelocity = {
@@ -146,7 +146,7 @@ export function shotRequestProcessingSystem(entities, timeMonad, assetsMonad, co
         if (canShoot) {
             bulletsToAdd.push(createBulletEntity(
                 entity,
-                configMonad.getPlayerConfig().shootDirection,
+                configMonad.getConfigSection("player").shootDirection,
                 assetsMonad,
                 configMonad
             )); // fulfill the request by creating a new bullet entity
@@ -227,7 +227,7 @@ export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad
         return entities;
     }
 
-    const enemySpawnConfig = configMonad.getEnemySpawnConfig();
+    const enemySpawnConfig = configMonad.getConfigSection("enemySpawn");
 
     const numberOfEnemiesToSpawn = randomMonad.nextInt(
         enemySpawnConfig.minEnemiesPerWave,

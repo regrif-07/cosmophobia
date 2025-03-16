@@ -19,10 +19,10 @@ export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
     const canvas = canvasMonad.getOrElse(null);
     const playerPositionY = canvas ? canvas.height / 2 : 0; // center player ship vertically on the canvas
 
-    const playerImagePath = configMonad.getAssetPaths().playerShip;
+    const playerImagePath = configMonad.getConfigSection("assetPaths").playerShip;
     const size = getAssetImageSize(assetsMonad, playerImagePath); // base player size on the size of its image
 
-    const playerConfig = configMonad.getPlayerConfig();
+    const playerConfig = configMonad.getConfigSection("player");
     return createEntity("player",
         // player position is vertically centered, with some horizontal offset
         Position(playerConfig.startPositionXOffset, playerPositionY),
@@ -38,7 +38,7 @@ export function createPlayerEntity(canvasMonad, assetsMonad, configMonad) {
 // - at random position behind right canvas border
 // - with random vertical velocity direction (moves up or down)
 export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomMonad) {
-    const enemyImagePath = configMonad.getAssetPaths().enemy;
+    const enemyImagePath = configMonad.getConfigSection("assetPaths").enemy;
 
     const size = getAssetImageSize(assetsMonad, enemyImagePath);
 
@@ -55,7 +55,7 @@ export function createEnemyEntity(canvasMonad, assetsMonad, configMonad, randomM
         randomMonad.nextInt(0, canvasHeight - size.height).getValue(),
     );
 
-    const enemyConfig = configMonad.getEnemyConfig();
+    const enemyConfig = configMonad.getConfigSection("enemy");
 
     // velocity with random vertical movement direction (up or down)
     const velocity = Velocity(
@@ -84,7 +84,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
     }
 
     // bullet size is based on bullet image size
-    const bulletImagePath = configMonad.getAssetPaths().bullet;
+    const bulletImagePath = configMonad.getConfigSection("assetPaths").bullet;
     // bullet size is kinda messed up, because we can have vertical and horizontal shooters
     // bullet image is horizontal - so this size is horizontal too
     // in order to use it with vertical bullet we should flip width with height
@@ -99,7 +99,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
         shootingEntity.size.height / 2 -
         bulletSize.height / 2;
 
-    const bulletConfig = configMonad.getBulletConfig();
+    const bulletConfig = configMonad.getConfigSection("bullet");
 
     let position = Position(0, 0);
     let velocity = Velocity(0, 0);
