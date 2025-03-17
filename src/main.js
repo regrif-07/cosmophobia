@@ -1,4 +1,4 @@
-import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./monads.js";
+import {CanvasMonad, ConfigMonad, InputMonad, LocalStorageMonad, RandomMonad, TimeMonad} from "./monads.js";
 import {createPlayerEntity, createScoreTrackerEntity} from "./entities.js";
 import {
     entityCleaningSystem,
@@ -17,6 +17,8 @@ const assetsMonad = await preloadImages(...Object.values(configMonad.getSection(
 let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
 const randomMonad = new RandomMonad(); // handle random based functionality
+
+const localStorageMonad = new LocalStorageMonad(); // encapsulate local storage (for score saving)
 
 // input configuration based on events
 
@@ -46,9 +48,7 @@ const initialEntities = [
     playerEntity,
     createScoreTrackerEntity(
         0,
-        localStorage.getItem('cosmophobiaBestScore')
-            ? parseInt(localStorage.getItem('cosmophobiaBestScore'), 10)
-            : 0
+        localStorageMonad.getNumber("cosmophobiaBestScore", 0)
     ),
 ];
 
@@ -101,9 +101,9 @@ function onGameEnded(finalEntities) {
     const currentScore = scoreEntity?.scoreTracker?.currentScore || 0;
     const bestScore = scoreEntity?.scoreTracker?.bestScore || 0;
 
-    const bestScoreUpdated = parseInt(localStorage.getItem('cosmophobiaBestScore'), 10) !== bestScore;
-    if (bestScoreUpdated) {
-        localStorage.setItem('cosmophobiaBestScore', bestScore.toString());
+    const isBestScoreUpdated = localStorageMonad.getNumber("cosmophobiaBestScore", 0) !== bestScore;
+    if (isBestScoreUpdated) {
+        localStorageMonad.setItem("cosmophobiaBestScore", bestScore.toString());
     }
 
     const gameResultsDiv = document.createElement("div");
@@ -130,7 +130,7 @@ function onGameEnded(finalEntities) {
     scoreContainer.appendChild(currentScoreP);
     scoreContainer.appendChild(bestScoreP);
 
-    if (bestScoreUpdated) {
+    if (isBestScoreUpdated) {
         const bestScoreUpdatedMessageP = document.createElement("p");
         bestScoreUpdatedMessageP.id = "bestScoreUpdatedMessage";
         bestScoreUpdatedMessageP.innerText = "NEW BEST SCORE";

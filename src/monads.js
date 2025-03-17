@@ -270,3 +270,48 @@ export class RandomMonad {
         });
     }
 }
+
+export class LocalStorageMonad {
+    constructor(storage = null) {
+        this.storage = storage === null ? window.localStorage : storage;
+    }
+
+    map(func) {
+        return (this.storage !== null) ? new LocalStorageMonad(func(this.storage)) : new LocalStorageMonad(null);
+    }
+
+    chain(func) {
+        return (this.storage !== null) ? func(this.storage) : new LocalStorageMonad(null);
+    }
+
+    getOrElse(defaultValue) {
+        return (this.storage !== null) ? this.storage : defaultValue;
+    }
+
+    getItem(key, defaultValue = null) {
+        if (this.storage === null) {
+            return defaultValue;
+        }
+
+        const item = this.storage.getItem(key);
+        return item !== null ? item : defaultValue;
+    }
+
+    getNumber(key, defaultValue = 0) {
+        return parseInt(this.getItem(key, defaultValue), 10);
+    }
+
+    setItem(key, item) {
+        if (this.storage === null) {
+            return this;
+        }
+
+        try {
+            this.storage.setItem(key, item);
+        } catch (e) {
+            console.error('Failed to save to localStorage', e);
+        }
+
+        return this;
+    }
+}
