@@ -91,31 +91,65 @@ function gameLoop(entities, applySystems) {
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems)); // continue wih next iteration
 }
 
+// updated best score in local storage and construct HTML elements to display the end screen
 function onGameEnded(finalEntities) {
     const canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return;
     }
 
+    // get score information from the score tracker entity
     const scoreEntity = finalEntities.find(entity => entity.type === "scoreTracker");
     const currentScore = scoreEntity?.scoreTracker?.currentScore || 0;
     const bestScore = scoreEntity?.scoreTracker?.bestScore || 0;
 
     const isBestScoreUpdated = localStorageMonad.getNumber("cosmophobiaBestScore", 0) !== bestScore;
     if (isBestScoreUpdated) {
-        localStorageMonad.setItem("cosmophobiaBestScore", bestScore.toString());
+        localStorageMonad.setItem("cosmophobiaBestScore", bestScore.toString()); // save best score if updated
     }
 
-    const gameResultsDiv = document.createElement("div");
+    // construct the final game results div
+    const gameResultsDiv = constructGameResultsDiv(currentScore, bestScore, isBestScoreUpdated);
+
+    // get main container, attach our results to it
+    const gameAreaDiv = document.getElementById("gameArea");
+    gameAreaDiv.appendChild(gameResultsDiv);
+
+    canvas.style.display = "none"; // hide the canvas
+}
+
+function constructGameResultsDiv(currentScore, bestScore, isBestScoreUpdated) {
+    const gameResultsDiv = document.createElement("div"); // main results container
     gameResultsDiv.id = "gameResults";
 
-    const gameEndMessageP = document.createElement("p");
+    const gameEndMessageP = document.createElement("p"); // game over message
     gameEndMessageP.innerText = "Game Over!";
     gameEndMessageP.id = "gameEndMessage";
 
-    const contentContainer = document.createElement("div");
+    const contentContainer = document.createElement("div"); // wrapper container for our elements
     contentContainer.id = "gameResultsContentContainer";
 
+    // construct score-related elements within their own container
+    const scoreContainer = constructScoreContainer(currentScore, bestScore, isBestScoreUpdated);
+
+    // restart button (just refreshes the page)
+    const gameRestartButton = document.createElement("button");
+    gameRestartButton.id = "gameRestartButton";
+    gameRestartButton.textContent = "Play Again";
+    gameRestartButton.addEventListener("click", () => {
+        location.reload();
+    });
+
+    // append everything to appropriate containers
+    contentContainer.appendChild(gameEndMessageP);
+    contentContainer.appendChild(scoreContainer);
+    contentContainer.appendChild(gameRestartButton);
+    gameResultsDiv.appendChild(contentContainer);
+
+    return gameResultsDiv;
+}
+
+function constructScoreContainer(currentScore, bestScore, isBestScoreUpdated) {
     const scoreContainer = document.createElement("div");
     scoreContainer.id = "scoreContainer";
 
@@ -130,7 +164,7 @@ function onGameEnded(finalEntities) {
     scoreContainer.appendChild(currentScoreP);
     scoreContainer.appendChild(bestScoreP);
 
-    if (isBestScoreUpdated) {
+    if (isBestScoreUpdated) { // if best score was updated - inform player about it
         const bestScoreUpdatedMessageP = document.createElement("p");
         bestScoreUpdatedMessageP.id = "bestScoreUpdatedMessage";
         bestScoreUpdatedMessageP.innerText = "NEW BEST SCORE";
@@ -138,20 +172,5 @@ function onGameEnded(finalEntities) {
         scoreContainer.appendChild(bestScoreUpdatedMessageP);
     }
 
-    const gameRestartButton = document.createElement("button");
-    gameRestartButton.id = "gameRestartButton";
-    gameRestartButton.textContent = "Play Again";
-    gameRestartButton.addEventListener("click", () => {
-        location.reload();
-    });
-
-    contentContainer.appendChild(gameEndMessageP);
-    contentContainer.appendChild(scoreContainer);
-    contentContainer.appendChild(gameRestartButton);
-    gameResultsDiv.appendChild(contentContainer);
-
-    const gameAreaDiv = document.getElementById("gameArea");
-    gameAreaDiv.appendChild(gameResultsDiv);
-
-    canvas.style.display = "none";
+    return scoreContainer;
 }
