@@ -69,6 +69,15 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
             return new AssetsMonad(assets);
         });
 
+        const scoreTrackerEntity = entities.find(entity => entity.type === "scoreTracker");
+        ctx.font = "24px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "right";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 4;
+        ctx.fillText(`Score: ${scoreTrackerEntity.scoreTracker.currentScore}`, canvas.width - 20, 30);
+        ctx.shadowBlur = 0;
+
         return new CanvasMonad(canvas);
     });
 
@@ -288,7 +297,7 @@ export function enemyCollisionSystem(entities, canvasMonad) {
 }
 
 // check for collision between bullets and enemies and handle it appropriately
-export function bulletEnemyCollisionSystem(entities) {
+export function bulletEnemyCollisionSystem(entities, configMonad) {
     const enemies = entities.filter(entity => entity.type === "enemy");
     const bullets = entities.filter(entity => entity.type === "bullet");
 
@@ -308,8 +317,28 @@ export function bulletEnemyCollisionSystem(entities) {
         });
     });
 
+    const enemiesDestroyedCount = collidedEnemyIds.size;
+    const updatedEntities = (enemiesDestroyedCount === 0) ? entities : entities.map(entity => {
+        if (entity.type !== "scoreTracker") {
+            return entity;
+        }
+
+        const pointsPerEnemy = configMonad.getSection("scoreTracker").pointsPerEnemy;
+        const newScore = entity.scoreTracker.currentScore + (enemiesDestroyedCount * pointsPerEnemy);
+
+        return {
+            ...entity,
+            scoreTracker: {
+                ...entity.scoreTracker,
+                currentScore: newScore,
+                bestScore: Math.max(newScore, entity.scoreTracker.bestScore),
+            },
+        };
+    });
+
     const entitiesToRemoveIds = collidedEnemyIds.union(collidedBulletIds);
-    return entities.filter(entity => !entitiesToRemoveIds.has(entity.id)); // remove bullets and enemies that collided
+    // remove collided bullets and enemies
+    return updatedEntities.filter(entity => !entitiesToRemoveIds.has(entity.id));
 }
 
 export function playerEnemyCollisionSystem(entities) {

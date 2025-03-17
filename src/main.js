@@ -1,5 +1,5 @@
-import {CanvasMonad, ConfigMonad, InputMonad, RandomMonad, TimeMonad} from "./monads.js";
-import { createPlayerEntity } from "./entities.js";
+import {CanvasMonad, ConfigMonad, InputMonad, LocalStorageMonad, RandomMonad, TimeMonad} from "./monads.js";
+import {createPlayerEntity, createScoreTrackerEntity} from "./entities.js";
 import {
     entityCleaningSystem,
     composeSystems, enemySpawnSystem,
@@ -17,6 +17,8 @@ const assetsMonad = await preloadImages(...Object.values(configMonad.getSection(
 let inputMonad = new InputMonad(); // handle input
 let timeMonad = TimeMonad.now(); // handle time-related functionality (updated on each game loop iteration)
 const randomMonad = new RandomMonad(); // handle random based functionality
+
+const localStorageMonad = new LocalStorageMonad(); // encapsulate local storage (for score saving)
 
 // input configuration based on events
 
@@ -42,7 +44,13 @@ const playerEntity = createPlayerEntity(canvasMonad, assetsMonad, configMonad);
 const playerEntityId = playerEntity.id; // hold the id of the player to check if the game has ended or not
 
 // initial entities
-const initialEntities = [playerEntity]
+const initialEntities = [
+    playerEntity,
+    createScoreTrackerEntity(
+        0,
+        localStorageMonad.getNumber("cosmophobiaBestScore", 0)
+    ),
+];
 
 // list of all systems to compose
 let systems = [
@@ -50,7 +58,7 @@ let systems = [
     (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
     (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
     playerEnemyCollisionSystem,
-    bulletEnemyCollisionSystem,
+    (entities) => bulletEnemyCollisionSystem(entities, configMonad),
     (entities) => enemyCollisionSystem(entities, canvasMonad, randomMonad),
     (entities) => playerCollisionSystem(entities, canvasMonad),
     physicsSystem,
@@ -71,22 +79,31 @@ gameLoop(initialEntities, applySystems);
 
 // main game loop function
 // to maintain immutability entities are not modified in place (passed as argument to next iteration)
-function gameLoop(initialEntities, applySystems) {
+function gameLoop(entities, applySystems) {
     timeMonad = TimeMonad.now(); // update timeMonad with currentTime
-    const updatedEntities = applySystems(initialEntities); // apply all systems to entities
+    const updatedEntities = applySystems(entities); // apply all systems to entities
 
-    if (!initialEntities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
-        displayResults();
+    if (!entities.some(entity => entity.id === playerEntityId)) { // if there is no player entity - game over
+        onGameEnded(entities);
         return;
     }
 
     requestAnimationFrame(() => gameLoop(updatedEntities, applySystems)); // continue wih next iteration
 }
 
-function displayResults() {
+function onGameEnded(finalEntities) {
     const canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return;
+    }
+
+    const scoreEntity = finalEntities.find(entity => entity.type === "scoreTracker");
+    const currentScore = scoreEntity?.scoreTracker?.currentScore || 0;
+    const bestScore = scoreEntity?.scoreTracker?.bestScore || 0;
+
+    const isBestScoreUpdated = localStorageMonad.getNumber("cosmophobiaBestScore", 0) !== bestScore;
+    if (isBestScoreUpdated) {
+        localStorageMonad.setItem("cosmophobiaBestScore", bestScore.toString());
     }
 
     const gameResultsDiv = document.createElement("div");
@@ -99,6 +116,28 @@ function displayResults() {
     const contentContainer = document.createElement("div");
     contentContainer.id = "gameResultsContentContainer";
 
+    const scoreContainer = document.createElement("div");
+    scoreContainer.id = "scoreContainer";
+
+    const currentScoreP = document.createElement("p");
+    currentScoreP.id = "currentScore";
+    currentScoreP.innerText = `Your Score: ${currentScore}`;
+
+    const bestScoreP = document.createElement("p");
+    bestScoreP.id = "bestScore";
+    bestScoreP.innerText = `Best Score: ${bestScore}`;
+
+    scoreContainer.appendChild(currentScoreP);
+    scoreContainer.appendChild(bestScoreP);
+
+    if (isBestScoreUpdated) {
+        const bestScoreUpdatedMessageP = document.createElement("p");
+        bestScoreUpdatedMessageP.id = "bestScoreUpdatedMessage";
+        bestScoreUpdatedMessageP.innerText = "NEW BEST SCORE";
+
+        scoreContainer.appendChild(bestScoreUpdatedMessageP);
+    }
+
     const gameRestartButton = document.createElement("button");
     gameRestartButton.id = "gameRestartButton";
     gameRestartButton.textContent = "Play Again";
@@ -107,6 +146,7 @@ function displayResults() {
     });
 
     contentContainer.appendChild(gameEndMessageP);
+    contentContainer.appendChild(scoreContainer);
     contentContainer.appendChild(gameRestartButton);
     gameResultsDiv.appendChild(contentContainer);
 
