@@ -69,6 +69,7 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
             return new AssetsMonad(assets);
         });
 
+        // display current score in the top right corner
         const scoreTrackerEntity = entities.find(entity => entity.type === "scoreTracker");
         ctx.font = "24px Arial";
         ctx.fillStyle = "white";
@@ -129,7 +130,8 @@ export function inputSystem(entities, inputMonad, configMonad) {
                         ...entity.shooterStatus, shotRequested: shotRequested
                     }
                 }
-                : entity);
+                : entity
+        );
     });
 }
 
@@ -146,7 +148,7 @@ export function physicsSystem(entities) {
             };
         }
 
-        return entity;
+        return entity; // if entity doesn't have necessary physics components - return without change
     });
 }
 
@@ -247,13 +249,13 @@ export function playerCollisionSystem(entities, canvasMonad) {
 // spawns enemies in waves
 export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad) {
     const enemyEntitiesCount = entities.filter(entity => entity.type === "enemy").length;
-    if (enemyEntitiesCount !== 0) { // if there are no enemies - current wave is in action, don't spawn any enemies
+    if (enemyEntitiesCount !== 0) { // if there are no enemies => current wave is in action, don't spawn any enemies
         return entities;
     }
 
     const enemySpawnConfig = configMonad.getSection("enemySpawn");
 
-    const numberOfEnemiesToSpawn = randomMonad.nextInt(
+    const numberOfEnemiesToSpawn = randomMonad.nextInt( // spawn random amount of enemies withing configured bounds
         enemySpawnConfig.minEnemiesPerWave,
         enemySpawnConfig.maxEnemiesPerWave
     ).getValue();
@@ -270,7 +272,7 @@ export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad
 export function enemyMovementSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
-        return entities; // if canvas is messed up, what are we even cleaning? go fix that bug
+        return entities; // if canvas is messed up, what are we even doing? go fix that bug
     }
 
     return entities.map(entity => {
@@ -279,7 +281,7 @@ export function enemyMovementSystem(entities, canvasMonad) {
         }
 
         if (entity.position.y > 0 && entity.position.y < canvas.height - entity.size.height) {
-            return entity; // if there is no collision - don't update enemy
+            return entity; // if there is no collision with top or bottom borders - don't update enemy
         }
 
         return {
@@ -290,7 +292,7 @@ export function enemyMovementSystem(entities, canvasMonad) {
             },
             velocity: { // flip the direction of vertical movement
                 ...entity.velocity,
-                y: -1 * entity.velocity.y,
+                y: -entity.velocity.y,
             },
         };
     });
@@ -304,6 +306,7 @@ export function bulletEnemyCollisionSystem(entities, configMonad) {
     const collidedEnemyIds = new Set();
     const collidedBulletIds = new Set();
 
+    // check for collisions and populate id sets
     enemies.forEach(enemy => {
         bullets.forEach(bullet => {
             if (collidedBulletIds.has(bullet.id)) {
@@ -317,6 +320,7 @@ export function bulletEnemyCollisionSystem(entities, configMonad) {
         });
     });
 
+    // if any enemies are destroyed - update the score tracker
     const enemiesDestroyedCount = collidedEnemyIds.size;
     const updatedEntities = (enemiesDestroyedCount === 0) ? entities : entities.map(entity => {
         if (entity.type !== "scoreTracker") {
@@ -348,6 +352,7 @@ export function playerEnemyCollisionSystem(entities) {
     const collidedPlayerIds = new Set();
     const collidedEnemyIds = new Set();
 
+    // check for collisions and populate id sets
     players.forEach(player => {
         enemies.forEach(enemy => {
             if (collidedEnemyIds.has(enemy.id)) {
@@ -368,8 +373,8 @@ export function playerEnemyCollisionSystem(entities) {
 // display all entities grouped by type when log key is pressed
 export function logSystem(entities, inputMonad, configMonad) {
     inputMonad.chain(activeKeys => {
-        if (activeKeys.has(configMonad.getSection("controls").log)) {
-            const entitiesGroupedByType = entities.reduce((typeGroups, entity) => {
+        if (activeKeys.has(configMonad.getSection("controls").log)) { // if log button was pressed
+            const entitiesGroupedByType = entities.reduce((typeGroups, entity) => { // group entities by type
                 const type = entity.type;
                 if (!typeGroups[type]) {
                     typeGroups[type] = [];
@@ -380,11 +385,11 @@ export function logSystem(entities, inputMonad, configMonad) {
                 return typeGroups;
             }, {});
 
-            console.log(entitiesGroupedByType);
+            console.log(entitiesGroupedByType); // and display
         }
 
         return new InputMonad(activeKeys);
     })
 
-    return entities;
+    return entities; // entities are not affected
 }
