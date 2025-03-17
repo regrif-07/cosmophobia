@@ -267,7 +267,7 @@ export function enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad
 }
 
 // handle enemy collision with canvas top and bottom borders; switch direction of vertical movement on collision
-export function enemyCollisionSystem(entities, canvasMonad) {
+export function enemyMovementSystem(entities, canvasMonad) {
     let canvas = canvasMonad.getOrElse(null);
     if (canvas === null) {
         return entities; // if canvas is messed up, what are we even cleaning? go fix that bug

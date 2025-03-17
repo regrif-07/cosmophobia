@@ -6,7 +6,7 @@ import {
     inputSystem, logSystem,
     physicsSystem, playerCollisionSystem,
     renderSystem,
-    shotRequestProcessingSystem, enemyCollisionSystem, bulletEnemyCollisionSystem, playerEnemyCollisionSystem
+    shotRequestProcessingSystem, enemyMovementSystem, bulletEnemyCollisionSystem, playerEnemyCollisionSystem
 } from "./systems.js";
 import {preloadImages} from "./assets-management.js";
 
@@ -52,18 +52,33 @@ const initialEntities = [
     ),
 ];
 
-// list of all systems to compose
+// list of all systems to compose (first systems is the array are LAST in the pipeline)
 let systems = [
-    (entities) => entityCleaningSystem(entities, canvasMonad),
-    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
-    (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
+    // construct a new frame and display it
+    (entities) => renderSystem(entities, canvasMonad, assetsMonad, configMonad),
+
+    // update physics
+    physicsSystem,
+
+    // update enemy movement
+    (entities) => enemyMovementSystem(entities, canvasMonad, randomMonad),
+
+    // don't let the player get out of the canvas borders
+    (entities) => playerCollisionSystem(entities, canvasMonad),
+
+    // check for "destruction" collisions
     playerEnemyCollisionSystem,
     (entities) => bulletEnemyCollisionSystem(entities, configMonad),
-    (entities) => enemyCollisionSystem(entities, canvasMonad, randomMonad),
-    (entities) => playerCollisionSystem(entities, canvasMonad),
-    physicsSystem,
+
+    // entity spawn systems
+    (entities) => enemySpawnSystem(entities, canvasMonad, assetsMonad, configMonad, randomMonad),
+    (entities) => shotRequestProcessingSystem(entities, timeMonad, assetsMonad, configMonad),
+
+    // take player input
     (entities) => inputSystem(entities, inputMonad, configMonad),
-    (entities) => renderSystem(entities, canvasMonad, assetsMonad, configMonad),
+
+    // first, clean entities
+    (entities) => entityCleaningSystem(entities, canvasMonad),
 ]
 
 // if logging is enabled, insert loggingSystem in the first position
