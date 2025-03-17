@@ -71,7 +71,7 @@ export function renderSystem(entities, canvasMonad, assetsMonad, configMonad) {
 
         // display current score in the top right corner
         const scoreTrackerEntity = entities.find(entity => entity.type === "scoreTracker");
-        ctx.font = "24px Arial";
+        ctx.font = "24px Orbitron";
         ctx.fillStyle = "white";
         ctx.textAlign = "right";
         ctx.shadowColor = "black";
