@@ -90,7 +90,7 @@ export function createBulletEntity(shootingEntity, direction, assetsMonad, confi
     // bullet size is kinda messed up, because we can have vertical and horizontal shooters
     // bullet image is horizontal (and default size is horizontal too) - so this size is horizontal too
     // in order to use it with vertical bullet we should flip width with height
-    const bulletSize = getAssetImageSize(assetsMonad, bulletImagePath) ||
+    const bulletSize = getAssetImageSize(assetsMonad, bulletImagePath) || // image is not adjusted for vertical shooting yet
                        configMonad.getSection("defaultSizes").bullet;
 
     // calculate horizontal and vertical middle positions relative to shooting entity

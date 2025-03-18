@@ -1,6 +1,6 @@
-// fit a number in a range
 import {hasComponents} from "./components.js";
 
+// fit a number in a range
 export function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
 }
