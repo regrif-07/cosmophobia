@@ -1,5 +1,5 @@
 # cosmophobia
-A simple HTML Canvas space shooter game.
+A simple HTML Canvas space shooter game. University project.
 ![cosmophobia-preview](https://github.com/user-attachments/assets/f9845143-3d37-4ac0-8584-e2c6b9dfd9bc)
 
 
